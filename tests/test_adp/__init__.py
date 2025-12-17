@@ -1,0 +1,1 @@
+"""ADP client tests."""

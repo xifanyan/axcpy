@@ -1,0 +1,1 @@
+"""SearchWebAPI client tests."""
