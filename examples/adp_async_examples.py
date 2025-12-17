@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 """
-Simple example demonstrating Session client sharing.
+Async example demonstrating AsyncSession client sharing with asyncio.
 
-This script shows how to create a shared ADPClient and use it across
-multiple Session instances with different task types.
+This script shows how to create a shared AsyncADPClient and use it across
+multiple AsyncSession instances with different task types using asyncio.
 
-Run with: python demo.py
+Run with: python adp_async_examples.py
+Run with debug: python adp_async_examples.py --debug
 """
 
 import sys
 from pathlib import Path
 import logging
+import asyncio
 
 # Add src to path for local development
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from axcpy.adp import ADPClient, Session
+from axcpy.adp import AsyncADPClient, AsyncSession
 from axcpy.adp.models import (
     ListEntitiesTaskConfig,
     ManageHostRolesTaskConfig,
@@ -30,43 +32,43 @@ ADPUSERNAME = "adpuser"
 ADPPASSWORD = "adpus3r"
 
 
-def list_entities_example(session: Session):
+async def list_entities_example(session: AsyncSession):
     """Example showing List Entities task using session.list_entities() method."""
-    print("\n[*] Example 1: List Entities Task")
+    print("\n[*] Example 1: List Entities Task (Async)")
 
     try:
         config = ListEntitiesTaskConfig(
             adp_listEntities_type="singleMindServer",
             # adp_listEntities_whiteList="id",  # ,displayName,hostNane,hostID",
         )
-        result = session.list_entities(config)
+        result = await session.list_entities(config)
         for entity in result.adp_entities_json_output:
             print(
                 f"  - ID: {entity.get('id')}, Display Name: {entity.get('displayName')}, Host Name: {entity.get('hostName')}"
             )
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[X] Error: {e}")
 
 
-def manage_host_roles_example(session: Session):
+async def manage_host_roles_example(session: AsyncSession):
     """Example showing Manage Host Roles task using session.manage_host_roles() method."""
-    print("\n[*] Example 2: Manage Host Roles Task")
+    print("\n[*] Example 2: Manage Host Roles Task (Async)")
 
     try:
         config = ManageHostRolesTaskConfig()  # Use defaults
-        result = session.manage_host_roles(config)
+        result = await session.manage_host_roles(config)
 
         if result.adp_manageHostRoles_json_output:
             for hostname, roles in result.adp_manageHostRoles_json_output.items():
                 print(f"  - {hostname}: {(roles)}")
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[X] Error: {e}")
 
 
-def read_configuration_example(session: Session):
+async def read_configuration_example(session: AsyncSession):
     """Example showing Read Configuration task using session.read_configuration() method."""
-    print("\n[*] Example 3: Read Configuration Task")
+    print("\n[*] Example 3: Read Configuration Task (Async)")
 
     try:
         config = ReadConfigurationTaskConfig(
@@ -81,7 +83,7 @@ def read_configuration_example(session: Session):
                 )
             ],
         )
-        result = session.read_configuration(config)
+        result = await session.read_configuration(config)
 
         print(f"Output file: {result.adp_readConfiguration_output_file_name}")
         print("Configuration data:")
@@ -100,31 +102,31 @@ def read_configuration_example(session: Session):
                 print(f"{config_info.Global.Static.Parameters}")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[X] Error: {e}")
 
 
-def query_engine_example(session: Session):
+async def query_engine_example(session: AsyncSession):
     """Example showing Query Engine task using session.query_engine() method."""
-    print("\n[*] Example 4: Query Engine Task")
+    print("\n[*] Example 4: Query Engine Task (Async)")
 
     try:
         config = QueryEngineTaskConfig(
             adp_queryEngine_engineName="",
             adp_queryEngine_applicationIdentifier="documentHold.demo00001",
         )
-        result = session.query_engine(config)
+        result = await session.query_engine(config)
 
         print(f"Query Results:")
         print(f"  - Document Count: {result.adp_query_engine_documents_count}")
         print(f"  - Aggregated Value: {result.adp_query_engine_aggregated_value}")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[X] Error: {e}")
 
 
-def taxonomy_statistics_example(session: Session):
+async def taxonomy_statistics_example(session: AsyncSession):
     """Example showing Taxonomy Statistic task using session.taxonomy_statistic() method."""
-    print("\n[*] Example 5: Taxonomy Statistic Task")
+    print("\n[*] Example 5: Taxonomy Statistic Task (Async)")
 
     try:
         # Define output taxonomies with specific configuration
@@ -143,7 +145,7 @@ def taxonomy_statistics_example(session: Session):
             adp_taxonomyStatistic_listCategoryProperties="false",
         )
 
-        result = session.taxonomy_statistic(config)
+        result = await session.taxonomy_statistic(config)
 
         print(f"Taxonomy Statistics:")
 
@@ -166,48 +168,108 @@ def taxonomy_statistics_example(session: Session):
                     print(f"     ... and {len(taxonomy.category) - 3} more categories")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[X] Error: {e}")
 
 
-def main():
-    """Main function that creates a shared client and demonstrates its usage."""
-    import sys
+async def concurrent_tasks_example(session: AsyncSession):
+    """Example showing concurrent execution of multiple tasks using the same session."""
+    print("\n[*] Example 6: Concurrent Tasks Execution (Async)")
 
+    try:
+        # Define multiple configurations
+        list_entities_config = ListEntitiesTaskConfig(
+            adp_listEntities_type="singleMindServer",
+        )
+
+        manage_roles_config = ManageHostRolesTaskConfig()
+
+        query_config = QueryEngineTaskConfig(
+            adp_queryEngine_engineName="",
+            adp_queryEngine_applicationIdentifier="documentHold.demo00001",
+        )
+
+        # Execute all tasks concurrently using the session methods
+        print("  [*] Launching 3 tasks concurrently...")
+        results = await asyncio.gather(
+            session.list_entities(list_entities_config),
+            session.manage_host_roles(manage_roles_config),
+            session.query_engine(query_config),
+            return_exceptions=True,
+        )
+
+        # Process results
+        print("  [+] All tasks completed!")
+
+        # Result 1: List Entities
+        if isinstance(results[0], Exception):
+            print(f"  [X] List Entities failed: {results[0]}")
+        else:
+            print(
+                f"  [+] List Entities returned {len(results[0].adp_entities_json_output)} entities"
+            )
+
+        # Result 2: Manage Host Roles
+        if isinstance(results[1], Exception):
+            print(f"  [X] Manage Host Roles failed: {results[1]}")
+        else:
+            print(
+                f"  [+] Manage Host Roles returned {len(results[1].adp_manageHostRoles_json_output)} hosts"
+            )
+
+        # Result 3: Query Engine
+        if isinstance(results[2], Exception):
+            print(f"  [X] Query Engine failed: {results[2]}")
+        else:
+            print(
+                f"  [+] Query Engine returned {results[2].adp_query_engine_documents_count} documents"
+            )
+
+    except Exception as e:
+        print(f"[X] Concurrent execution error: {e}")
+
+
+async def main():
+    """Main async function that creates a shared client and demonstrates its usage."""
     # Check if --debug flag is passed
     debug_mode = "--debug" in sys.argv
 
-    # Basic logging configuration for demo purposes (library itself does not configure handlers)
+    # Basic logging configuration for demo purposes
     logging.basicConfig(
         level=logging.DEBUG if debug_mode else logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
-    print("[*] Creating shared ADPClient for multiple examples")
+
+    print("[*] Creating shared AsyncADPClient for multiple async examples")
     print("=" * 60)
 
-    # Create a single shared client that will be used by both examples
-    shared_client = ADPClient(
+    # Create a single shared async client that will be used by all examples
+    async with AsyncADPClient(
         base_url="https://vm-rhauswirth2.otxlab.net:8443",
         ignore_tls=True,
         timeout=30.0,
         debug=debug_mode,
-    )
+    ) as shared_client:
+        print(f"[+] Created shared async client with ID: {id(shared_client)}")
 
-    print(f"[+] Created shared client with ID: {id(shared_client)}")
+        # Create a single session object that will be reused for all examples
+        session = AsyncSession(
+            client=shared_client, auth_username=ADPUSERNAME, auth_password=ADPPASSWORD
+        )
+        print(f"[+] Created shared session with username: {session.auth_username}")
+        print("[*] This same session will be reused for all task examples")
 
-    # Create a single session object that will be reused for all examples
-    session = Session(
-        client=shared_client, auth_username=ADPUSERNAME, auth_password=ADPPASSWORD
-    )
-    print(f"[+] Created shared session with username: {session.auth_username}")
-    print("[*] This same session will be reused for all task examples")
+        # Run individual examples - all reusing the same session
+        # await list_entities_example(session)
+        # await manage_host_roles_example(session)
+        # await query_engine_example(session)
+        await read_configuration_example(session)
+        await taxonomy_statistics_example(session)
 
-    # Pass the session to all example functions
-    list_entities_example(session)
-    manage_host_roles_example(session)
-    read_configuration_example(session)
-    query_engine_example(session)
-    taxonomy_statistics_example(session)
+        # Demonstrate concurrent execution with the same session
+        await concurrent_tasks_example(session)
+
+    print("\n[+] All async examples completed!")
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
