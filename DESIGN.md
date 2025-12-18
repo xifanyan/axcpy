@@ -101,10 +101,15 @@ axcpy/
 │       │       ├── session.py          # Session (sync wrapper)
 │       │       └── async_session.py    # AsyncSession (async wrapper)
 │       │
-│       ├── searchwebapi/         # SearchWebAPI Client
-│       │   ├── __init__.py
-│       │   ├── client.py         # Client wrapper
-│       │   └── generated/        # Kiota-generated code (future)
+│       ├── searchwebapi/         # SearchWebAPI Client (Kiota-generated)
+│       │   ├── __init__.py       # Exports SearchWebApiClient
+│       │   ├── api_spec.json     # OpenAPI specification
+│       │   └── generated/        # Kiota-generated code
+│       │       ├── search_web_api_client.py  # Main client class
+│       │       ├── login/        # Login endpoint handlers
+│       │       ├── logout/       # Logout endpoint handlers
+│       │       ├── projects/     # Projects endpoint handlers
+│       │       └── models/       # Request/response models
 │       │
 │       ├── common/               # Shared utilities
 │       │   ├── __init__.py
@@ -150,10 +155,12 @@ axcpy/
 │
 ├── examples/                     # Usage examples
 │   ├── adp_examples.py          # ADP client examples
-│   └── adp_async_examples.py    # Async ADP client examples
+│   ├── adp_async_examples.py    # Async ADP client examples
+│   └── searchWebApi_examples.py # SearchWebAPI client examples
 │
 └── scripts/                      # Build and utility scripts
-    ├── generate_searchwebapi.sh  # Kiota generation script
+    ├── generate_searchwebapi.sh  # Kiota generation script (Bash)
+    ├── generate_searchwebapi.ps1 # Kiota generation script (PowerShell)
     └── setup_dev.sh              # Development environment setup
 ```
 
@@ -315,37 +322,119 @@ See [api_spec.md](src/axcpy/adp/api_spec.md) for comprehensive task type documen
 
 **Purpose**: OpenAPI 3.x based client generated with Microsoft Kiota
 
+The SearchWebAPI client provides access to Axcelerate's search capabilities through a fully-typed, auto-generated Python client.
+
+**Current Status**: ✅ Implemented and tested
+
 **Key Features**:
-- Auto-generated from OpenAPI specification
+- Auto-generated from OpenAPI specification using Microsoft Kiota
 - Strongly-typed request/response models
-- Built-in serialization/deserialization
-- Wrapper layer for convenience methods
+- Built-in serialization/deserialization (JSON and Text)
+- Fluent API design with method chaining
+- Session-based authentication support
+- Support for multiple authentication methods
+
+**Architecture**:
+```
+SearchWebApiClient (generated/search_web_api_client.py)
+├── login/          # Login endpoints
+├── logout/         # Logout endpoints
+├── projects/       # Project management
+│   ├── collections/    # Collection operations
+│   │   ├── fields/     # Field definitions
+│   │   └── search/     # Search operations
+│   └── ...
+└── models/         # Request/response models
+```
 
 **Generation Process**:
-```bash
-# Generate client from OpenAPI spec
-kiota generate \
-  --language python \
-  --openapi openapi.yaml \
-  --output src/axcpy/searchwebapi/generated \
-  --class-name SearchWebAPIClient \
-  --namespace-name axcpy.searchwebapi.generated
+```powershell
+# Generate client from OpenAPI spec using PowerShell script
+.\scripts\generate_searchwebapi.ps1
+
+# Or manually with Kiota CLI
+kiota generate `
+  --language python `
+  --openapi api_spec.json `
+  --output src/axcpy/searchwebapi/generated `
+  --class-name SearchWebApiClient `
+  --namespace-name axcpy.searchwebapi.generated `
+  --clear-output
 ```
 
-**Example API**:
+**Dependencies** (automatically managed):
+- `microsoft-kiota-abstractions` - Core abstractions
+- `microsoft-kiota-http` - HTTP transport (httpx-based)
+- `microsoft-kiota-serialization-json` - JSON serialization
+- `microsoft-kiota-serialization-text` - Text serialization
+
+**Usage Example**:
 ```python
-from axcpy.searchwebapi import SearchWebAPIClient
+import asyncio
+import httpx
+from kiota_http.httpx_request_adapter import HttpxRequestAdapter
+from axcpy.searchwebapi import SearchWebApiClient
 
-client = SearchWebAPIClient(
-    base_url="https://axcelerate.example.com/search",
-    credentials=credentials
-)
+class BasicAuthProvider:
+    """Basic authentication with session management"""
+    def __init__(self, username: str, password: str):
+        self.username = username
+        self.password = password
+        self.session_id = None
+    
+    async def authenticate_request(self, request, additional_authentication_context=None):
+        import base64
+        if hasattr(request, "headers"):
+            if self.session_id:
+                # Use session if available
+                request.headers.try_add("SWA-SESSION", self.session_id)
+            else:
+                # Send Basic Auth credentials
+                credentials = f"{self.username}:{self.password}"
+                encoded = base64.b64encode(credentials.encode()).decode()
+                request.headers.try_add("Authorization", f"Basic {encoded}")
+        return request
 
-# Execute search
-search_results = await client.search.execute(
-    query_params={"q": "document search"}
-)
+async def main():
+    # Setup authentication
+    auth_provider = BasicAuthProvider("admin", "password")
+    
+    # Create HTTP client and request adapter
+    http_client = httpx.AsyncClient(verify=False, timeout=30.0)
+    request_adapter = HttpxRequestAdapter(auth_provider, http_client=http_client)
+    request_adapter.base_url = "https://server:8443/searchWebApi"
+    
+    # Create SearchWebAPI client
+    client = SearchWebApiClient(request_adapter)
+    
+    # Login and capture session
+    await client.login.post()
+    
+    # Get projects (using session)
+    projects = await client.projects.get()
+    print(f"Found {len(projects)} projects")
+    
+    # Get fields for a specific collection
+    fields = await (client.projects
+        .by_project_id("singleMindServer.demo00001")
+        .collections.by_collection_id("default")
+        .fields.get())
+    
+    # Logout
+    await client.logout.delete()
+    await http_client.aclose()
+
+asyncio.run(main())
 ```
+
+**Session Management**:
+The SearchWebAPI uses session-based authentication:
+1. Initial request sends Basic Auth credentials
+2. Server returns `SWA-SESSION` header
+3. Subsequent requests use session header (no credentials)
+4. Logout clears the session
+
+See [searchWebApi_examples.py](../examples/searchWebApi_examples.py) for complete working example.
 
 ### 3. Common Utilities
 
@@ -724,11 +813,15 @@ def test_adp_client_run(httpx_mock):
 - [ ] Output formatting with Rich
 - [ ] CLI testing
 
-### 📋 Phase 5: SearchWebAPI Client (Planned)
-- [ ] Obtain OpenAPI specification
-- [ ] Generate client with Kiota
-- [ ] Create wrapper/adapter layer
-- [ ] Integration with common auth
+### ✅ Phase 5: SearchWebAPI Client (Complete)
+- [x] Obtain OpenAPI specification
+- [x] Generate client with Kiota
+- [x] Generated client structure (login, logout, projects, collections, fields)
+- [x] Authentication providers (Basic Auth with session management)
+- [x] Working examples (searchWebApi_examples.py)
+- [x] PowerShell generation script
+- [x] Package exports via __init__.py
+- [ ] Wrapper/adapter layer (optional - direct usage is clean)
 - [ ] Unit tests for SearchWebAPI
 - [ ] CLI commands for SearchWebAPI
 
@@ -776,6 +869,13 @@ dependencies = [
 - **rich**: Beautiful terminal output with progress bars, tables, syntax highlighting
 - **python-dotenv**: Simple .env file support for local development
 
+**Rationale for SearchWebAPI Dependencies**:
+- **microsoft-kiota-abstractions**: Core abstractions for Kiota-generated clients (request adapters, authentication, serialization)
+- **microsoft-kiota-http**: HTTP transport implementation using httpx for async support
+- **microsoft-kiota-serialization-json**: JSON content type support for API requests/responses
+- **microsoft-kiota-serialization-text**: Plain text content type support
+- These are optional dependencies - only install if using SearchWebAPI client
+
 ### Development Dependencies
 
 ```toml
@@ -794,9 +894,23 @@ dev = [
 
 ```toml
 [project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-httpx>=0.30.0",
+    "ruff>=0.1.0",
+    "mypy>=1.7.0",
+    "types-requests",
+]
 api = [
     "fastapi>=0.108.0",           # Web framework (future)
     "uvicorn>=0.25.0",            # ASGI server (future)
+]
+searchwebapi = [
+    "microsoft-kiota-abstractions>=1.3.0",      # Kiota core abstractions
+    "microsoft-kiota-http>=1.3.0",              # HTTP transport for Kiota
+    "microsoft-kiota-serialization-json>=1.0.0", # JSON serialization
+    "microsoft-kiota-serialization-text>=1.0.0", # Text serialization
 ]
 ```
 
@@ -804,7 +918,18 @@ api = [
 
 External tools not managed by pip:
 - **Microsoft Kiota**: OpenAPI client generation (npm/dotnet tool)
+  ```bash
+  # Install via npm
+  npm install -g @microsoft/kiota
+  
+  # Or via .NET tool
+  dotnet tool install -g Microsoft.OpenApi.Kiota
+  ```
 - **uv**: Package and environment manager (installed separately)
+  ```bash
+  # Install on Windows (PowerShell)
+  irm https://astral.sh/uv/install.ps1 | iex
+  ```
 
 ### Dependency Philosophy
 
