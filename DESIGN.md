@@ -2,15 +2,19 @@
 
 ## Project Overview
 
-**axcpy** is a Python client library and toolset for interacting with OpenText Axcelerate, an eDiscovery service platform. The project provides programmatic access to Axcelerate's REST APIs through well-structured client libraries, a command-line interface, and potential web service integration.
+**axcpy** is a Python client library and toolset for interacting with OpenText Axcelerate, an eDiscovery service platform. The project provides programmatic access to Axcelerate's ADP (Axcelerate Data Platform) REST API and SearchWebAPI through well-structured client libraries, a command-line interface, and potential web service integration.
+
+The library emphasizes type safety, modern Python practices, and developer experience through comprehensive tooling and documentation.
 
 ## Goals and Objectives
 
-- Provide robust Python client libraries for Axcelerate's REST services
-- Enable automation of eDiscovery workflows
-- Offer both programmatic and CLI access to Axcelerate services
-- Maintain type safety and comprehensive documentation
-- Support future extension with FastAPI web service
+- **Primary**: Provide robust Python client libraries for Axcelerate's REST services (ADP and SearchWebAPI)
+- **Automation**: Enable automation of eDiscovery workflows and batch operations
+- **Accessibility**: Offer both programmatic API and CLI access to Axcelerate services
+- **Type Safety**: Maintain comprehensive type hints and Pydantic models for validation
+- **Developer Experience**: Use modern tooling (uv, httpx, typer) for optimal development workflow
+- **Extensibility**: Support future extension with FastAPI web service and additional features
+- **Documentation**: Comprehensive API documentation and practical examples
 
 ## System Architecture
 
@@ -63,109 +67,249 @@
 
 ```
 axcpy/
-├── README.md                    # Project overview and quick start
-├── DESIGN.md                    # This document
-├── LICENSE                      # License information
-├── pyproject.toml              # Project configuration and dependencies
-├── uv.lock                     # uv lockfile for reproducible builds
-├── .python-version             # Python version specification for uv
-├── .gitignore                  # Git ignore rules
+├── README.md                      # Project overview and quick start
+├── DESIGN.md                      # This document (architecture and design)
+├── LICENSE                        # License information
+├── pyproject.toml                 # Project configuration and dependencies
+├── main.py                        # Development entry point
 │
 ├── src/
 │   └── axcpy/
-│       ├── __init__.py         # Package initialization
-│       ├── __version__.py      # Version information
+│       ├── __init__.py           # Package initialization
+│       ├── __version__.py        # Version information
 │       │
-│       ├── adp/                # ADP Client Library
-│       │   ├── __init__.py
-│       │   ├── client.py       # Main ADP client class
-│       │   ├── models.py       # Pydantic models for ADP
-│       │   ├── exceptions.py   # ADP-specific exceptions
-│       │   └── endpoints/      # Organized endpoint methods
+│       ├── adp/                  # ADP Client Library
+│       │   ├── __init__.py       # Exports ADPClient, AsyncADPClient, Session
+│       │   ├── api_spec.md       # Complete ADP API specification
+│       │   │
+│       │   ├── models/           # Pydantic models
+│       │   │   ├── __init__.py   # Model exports
+│       │   │   ├── base.py       # BaseTaskConfig (shared fields)
+│       │   │   ├── request.py    # ADPTaskRequest wrapper
+│       │   │   ├── response.py   # Response base classes
+│       │   │   ├── task_spec.py  # Task specifications registry
+│       │   │   ├── list_entities.py        # List entities config/result
+│       │   │   ├── manage_host_roles.py    # Host roles config/result
+│       │   │   ├── query_engine.py         # Query engine config/result
+│       │   │   ├── read_configuration.py   # Read config config/result
+│       │   │   └── taxonomy_statistic.py   # Taxonomy stats config/result
+│       │   │
+│       │   └── services/         # Client implementations
 │       │       ├── __init__.py
-│       │       ├── cases.py
-│       │       ├── documents.py
-│       │       └── search.py
+│       │       ├── client.py           # ADPClient (sync)
+│       │       ├── async_client.py     # AsyncADPClient (async)
+│       │       ├── session.py          # Session (sync wrapper)
+│       │       └── async_session.py    # AsyncSession (async wrapper)
 │       │
-│       ├── searchwebapi/       # SearchWebAPI Client (Kiota-generated)
+│       ├── searchwebapi/         # SearchWebAPI Client
 │       │   ├── __init__.py
-│       │   ├── client.py       # Wrapper/adapter for generated client
-│       │   └── generated/      # Kiota-generated code
-│       │       └── ...         # Auto-generated files
+│       │   ├── client.py         # Client wrapper
+│       │   └── generated/        # Kiota-generated code (future)
 │       │
-│       ├── common/             # Shared utilities
+│       ├── common/               # Shared utilities
 │       │   ├── __init__.py
-│       │   ├── auth.py         # Authentication handlers
-│       │   ├── config.py       # Configuration management
-│       │   ├── http.py         # HTTP utilities and middleware
-│       │   └── exceptions.py   # Common exceptions
+│       │   ├── auth.py           # AuthHandler protocol, APIKeyAuth, OAuth2Auth
+│       │   ├── config.py         # AxcelerateConfig (Pydantic settings)
+│       │   ├── http.py           # HTTP utilities and helpers
+│       │   └── exceptions.py     # Exception hierarchy
 │       │
-│       ├── cli/                # Command-line interface
+│       ├── cli/                  # Command-line interface
 │       │   ├── __init__.py
-│       │   ├── main.py         # CLI entry point
-│       │   ├── adp_commands.py # ADP CLI commands
-│       │   └── search_commands.py # SearchWebAPI CLI commands
+│       │   ├── main.py           # CLI entry point (Typer app)
+│       │   ├── adp_commands.py   # ADP CLI commands (in development)
+│       │   └── search_commands.py # SearchWebAPI CLI commands (planned)
 │       │
-│       └── api/                # FastAPI service (Future)
+│       └── api/                  # FastAPI service (Future)
 │           ├── __init__.py
-│           ├── main.py         # FastAPI app
-│           ├── routes/
-│           └── middleware/
+│           ├── main.py           # FastAPI app
+│           ├── routes/           # API routes
+│           │   └── ...
+│           └── middleware/       # Custom middleware
+│               └── ...
 │
-├── tests/                      # Test suite
+├── tests/                        # Test suite
 │   ├── __init__.py
-│   ├── conftest.py            # Pytest configuration
-│   ├── test_adp/              # ADP client tests
-│   ├── test_searchwebapi/     # SearchWebAPI tests
-│   └── test_cli/              # CLI tests
+│   ├── conftest.py              # Pytest configuration and fixtures
+│   ├── test_adp/                # ADP client tests
+│   │   ├── __init__.py
+│   │   ├── test_client.py       # ADPClient tests
+│   │   └── test_async_client.py # AsyncADPClient tests
+│   ├── test_searchwebapi/       # SearchWebAPI tests
+│   │   └── __init__.py
+│   └── test_cli/                # CLI tests
+│       ├── __init__.py
+│       └── test_main.py         # CLI command tests
 │
-├── docs/                       # Documentation
+├── docs/                         # Documentation
 │   ├── index.md
 │   ├── getting-started.md
 │   ├── api-reference/
+│   │   └── ...
 │   └── examples/
+│       └── ...
 │
-├── examples/                   # Usage examples
-│   ├── adp_examples.py
-│   ├── search_examples.py
-│   └── combined_workflow.py
+├── examples/                     # Usage examples
+│   ├── adp_examples.py          # ADP client examples
+│   └── adp_async_examples.py    # Async ADP client examples
 │
-└── scripts/                    # Build and utility scripts
+└── scripts/                      # Build and utility scripts
     ├── generate_searchwebapi.sh  # Kiota generation script
-    └── setup_dev.sh              # Development setup (using uv)
+    └── setup_dev.sh              # Development environment setup
 ```
+
+**Key Directories**:
+
+- **`src/axcpy/adp/models/`**: All Pydantic models for ADP tasks, organized by task type
+- **`src/axcpy/adp/services/`**: HTTP client and session implementations (sync and async)
+- **`src/axcpy/common/`**: Reusable utilities shared across all modules
+- **`tests/`**: Comprehensive test suite with pytest
+- **`examples/`**: Practical usage examples for developers
+- **`docs/`**: User and API documentation
 
 ## Component Design
 
 ### 1. ADP Client Library
 
-**Purpose**: Manually crafted REST client for ADP service
+**Purpose**: Manually crafted REST client for ADP service using PUT-only semantics
+
+The ADP service uses a unique task-based API where all operations are submitted via PUT requests to specific endpoints. Each task has a type and configuration, sent as JSON payloads.
+
+#### Architecture Layers
+
+**1.1 HTTP Client Layer** (`ADPClient` and `AsyncADPClient`)
+- Low-level HTTP client built on `httpx`
+- Handles PUT requests to ADP endpoints
+- Manages TLS verification, timeouts, and headers
+- Provides debug logging capabilities
+- Implements context manager protocol for resource cleanup
 
 **Key Features**:
-- Type-safe request/response models using Pydantic
-- Organized endpoint modules (cases, documents, search)
-- Comprehensive error handling
-- Authentication management
-- Retry logic and rate limiting
+- Synchronous and async variants for flexibility
+- Built-in request/response logging when debug mode enabled
+- Configurable timeouts and headers per request
+- Connection pooling via httpx client
+- Support for self-signed certificates (testing)
 
-**Example API**:
+**Example**:
 ```python
-from axcpy.adp import ADPClient
+from axcpy.adp import ADPClient, AsyncADPClient
 
+# Synchronous client
 client = ADPClient(
-    base_url="https://axcelerate.example.com/adp",
-    api_key="your-api-key"
+    base_url="https://axcelerate.example.com",
+    ignore_tls=False,
+    timeout=30.0,
+    debug=True
 )
 
-# Get case information
-case = await client.cases.get(case_id=123)
-
-# Search documents
-results = await client.search.query(
-    case_id=123,
-    query="contract AND date:[2020 TO 2023]"
+# Async client
+async_client = AsyncADPClient(
+    base_url="https://axcelerate.example.com",
+    timeout=60.0
 )
+
+# Context manager support
+with ADPClient(base_url=url) as client:
+    response = client.run(task)
 ```
+
+**1.2 Session Layer** (`Session` and `AsyncSession`)
+- High-level abstraction over ADPClient
+- Manages authentication headers (Auth-Username, Auth-Password)
+- Provides type-safe methods for each task type
+- Automatically constructs ADPTaskRequest objects
+- Parses responses into strongly-typed result models
+
+**Key Features**:
+- Header-based authentication management
+- Type-safe task execution methods
+- Automatic response parsing to Pydantic models
+- Shared client instance across sessions (efficient resource usage)
+- Task-specific convenience methods (e.g., `list_entities()`, `query_engine()`)
+
+**Example**:
+```python
+from axcpy.adp import ADPClient, Session
+from axcpy.adp.models import ListEntitiesTaskConfig
+
+# Create shared client
+client = ADPClient(base_url="https://axcelerate.example.com/adp")
+
+# Create session with authentication
+session = Session(
+    client=client,
+    auth_username="adpuser",
+    auth_password="password"
+)
+
+# Use type-safe task methods
+config = ListEntitiesTaskConfig(adp_listEntities_type="singleMindServer")
+result = session.list_entities(config)  # Returns ListEntitiesResult
+
+# Access typed results
+for entity in result.adp_entities_json_output:
+    print(f"ID: {entity.get('id')}, Name: {entity.get('displayName')}")
+```
+
+**1.3 Model Layer** (Pydantic Models)
+- **Base Models**: `BaseTaskConfig` - shared configuration fields across all tasks
+- **Task Configs**: Type-safe configuration for each ADP task type
+  - `ListEntitiesTaskConfig`
+  - `ManageHostRolesTaskConfig`
+  - `QueryEngineTaskConfig`
+  - `ReadConfigurationTaskConfig`
+  - `TaxonomyStatisticTaskConfig`
+- **Request Models**: `ADPTaskRequest` - wraps task type and configuration
+- **Response Models**: Strongly-typed result objects for each task type
+  - `ListEntitiesResult`
+  - `ManageHostRolesResult`
+  - `QueryEngineResult`
+  - etc.
+
+**Model Structure**:
+```python
+# Base configuration (shared fields)
+class BaseTaskConfig(BaseModel):
+    adp_loggingEnabled: bool = True
+    adp_executionPersistent: bool = True
+    adp_progressTaskTimeout: int = 0
+    adp_taskActive: bool = True
+    adp_taskTimeout: int = 0
+    adp_cleanUpHistory: bool = False
+
+# Task-specific configuration
+class ListEntitiesTaskConfig(BaseTaskConfig):
+    adp_listEntities_type: str
+    adp_listEntities_whiteList: str = ""
+    # ... other fields
+
+# Request wrapper
+class ADPTaskRequest(BaseModel):
+    taskType: str
+    taskConfiguration: TaskConfigurationType
+    taskDescription: str = ""
+    taskDisplayName: str = ""
+    
+    def as_payload(self) -> dict[str, object]:
+        # Serializes to wire format
+```
+
+#### API Endpoints
+
+The ADP service exposes two main endpoints:
+- `/adp/rest/api/task/executeAdpTask` - Synchronous task execution
+- `/adp/rest/api/task/executeAdpTaskAsync` - Asynchronous task execution (returns task ID for polling)
+
+#### Task Types
+
+Currently implemented task types:
+1. **List Entities**: Query SingleMind servers and other entity types
+2. **Manage Host Roles**: Get host role configurations
+3. **Query Engine**: Execute search queries against data engines
+4. **Read Configuration**: Retrieve configuration data
+5. **Taxonomy Statistic**: Get taxonomy statistics and metadata
+
+See [api_spec.md](src/axcpy/adp/api_spec.md) for comprehensive task type documentation.
 
 ### 2. SearchWebAPI Client Library
 
@@ -205,67 +349,197 @@ search_results = await client.search.execute(
 
 ### 3. Common Utilities
 
-**Authentication Handler**:
+#### 3.1 Authentication (`common/auth.py`)
+
+The authentication module provides a protocol-based design supporting multiple auth methods:
+
+**Authentication Protocol**:
 ```python
-class AuthHandler:
-    """Handles various authentication methods"""
-    - API Key authentication
-    - OAuth 2.0 flow
-    - Token refresh
-    - Credential storage
+class AuthHandler(Protocol):
+    """Protocol for authentication handlers"""
+    def get_headers(self) -> dict[str, str]: ...
 ```
 
-**Configuration Management**:
+**Implementations**:
+- `APIKeyAuth`: Bearer token authentication
+- `OAuth2Auth`: OAuth 2.0 token-based authentication
+
+**Usage**:
+```python
+from axcpy.common.auth import APIKeyAuth, OAuth2Auth
+
+# API Key auth
+auth = APIKeyAuth(api_key="your-api-key")
+headers = auth.get_headers()  # {"Authorization": "Bearer your-api-key"}
+
+# OAuth2 auth
+oauth = OAuth2Auth(token="oauth-token")
+headers = oauth.get_headers()  # {"Authorization": "Bearer oauth-token"}
+```
+
+**Note**: The ADP service currently uses custom header-based authentication (`Auth-Username`/`Auth-Password`) managed by the Session layer. The common auth module provides extensibility for other services like SearchWebAPI.
+
+#### 3.2 Configuration Management (`common/config.py`)
+
+Configuration uses Pydantic Settings for environment variable and .env file support:
+
 ```python
 class AxcelerateConfig(BaseSettings):
     """Application configuration using Pydantic settings"""
-    adp_base_url: str
-    search_base_url: str
-    api_key: Optional[str]
+    model_config = SettingsConfigDict(
+        env_prefix="AXCELERATE_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+    )
+    
+    adp_base_url: Optional[str] = None
+    search_base_url: Optional[str] = None
+    api_key: Optional[str] = None
     timeout: int = 30
     max_retries: int = 3
+    verify_ssl: bool = True
+```
+
+**Configuration Sources** (priority order):
+1. Direct programmatic configuration via `configure()`
+2. Environment variables with `AXCELERATE_` prefix
+3. `.env` file in working directory
+4. Default values
+
+**Usage**:
+```python
+from axcpy.common.config import get_config, configure
+
+# Get global config (auto-loads from env)
+config = get_config()
+print(config.adp_base_url)
+
+# Programmatic configuration
+configure(
+    adp_base_url="https://axcelerate.example.com/adp",
+    api_key="your-key",
+    timeout=60
+)
+```
+
+#### 3.3 HTTP Utilities (`common/http.py`)
+
+Common HTTP utilities, middleware, and helpers:
+- Custom exception handling
+- Request/response interceptors
+- Retry logic with exponential backoff
+- Rate limiting utilities
+- Response parsing helpers
+
+#### 3.4 Exception Hierarchy (`common/exceptions.py`)
+
+Structured exception hierarchy for clear error handling:
+
+```python
+AxcelerateException
+├── ADPException
+│   ├── ADPAuthenticationError
+│   ├── ADPNotFoundError
+│   ├── ADPValidationError
+│   └── ADPTimeoutError
+├── SearchWebAPIException
+│   ├── SearchAuthenticationError
+│   └── SearchQueryError
+└── ConfigurationError
+    ├── MissingConfigurationError
+    └── InvalidConfigurationError
 ```
 
 ### 4. CLI Interface
 
-**Purpose**: Command-line interface for both libraries
+**Purpose**: Command-line interface for interacting with Axcelerate services
 
-**Framework**: Typer (modern, type-based CLI framework)
+**Framework**: Typer (modern, type-based CLI framework) + Rich (terminal formatting)
 
-**Structure**:
+**Current Implementation Status**:
+- ✅ CLI framework structure (`cli/main.py`)
+- ✅ Version command
+- 🚧 Configuration management (placeholder)
+- 🚧 ADP commands (`cli/adp_commands.py`) - in development
+- 🚧 SearchWebAPI commands (`cli/search_commands.py`) - planned
+
+**CLI Structure**:
+```python
+# Main app entry point
+app = typer.Typer(
+    name="axcpy",
+    help="Axcelerate Python Client - CLI for OpenText Axcelerate eDiscovery service",
+    no_args_is_help=True,
+)
+
+@app.command()
+def version() -> None:
+    """Show version information."""
+    
+@app.command()
+def config() -> None:
+    """Manage configuration."""
+    
+# Subcommands (to be added)
+# app.add_typer(adp_app, name="adp")
+# app.add_typer(search_app, name="search")
+```
+
+**Planned Command Structure**:
 ```
 axcpy [OPTIONS] COMMAND [ARGS]
 
 Commands:
-  adp      ADP service commands
-  search   SearchWebAPI commands
-  config   Configuration management
+  version              Show version information
+  config               Manage configuration (set/get/list)
+  adp                  ADP service commands
+  search               SearchWebAPI commands
+
+axcpy config [COMMAND]
+  set [KEY] [VALUE]    Set configuration value
+  get [KEY]            Get configuration value
+  list                 List all configuration
+  init                 Initialize configuration interactively
 
 axcpy adp [COMMAND]
-  cases list          List cases
-  cases get [ID]      Get case details
-  docs search [QUERY] Search documents
-
+  list-entities        List entities (SingleMind servers, etc.)
+  query-engine         Execute query engine search
+  read-config          Read configuration data
+  manage-roles         Manage host roles
+  taxonomy-stats       Get taxonomy statistics
+  
 axcpy search [COMMAND]
-  query [QUERY]       Execute search query
-  export [OPTIONS]    Export search results
+  query [QUERY]        Execute search query
+  export [OPTIONS]     Export search results
 ```
 
-**Example Usage**:
+**Example Usage** (planned):
 ```bash
+# Show version
+axcpy version
+
 # Configure credentials
-axcpy config set --adp-url https://axcelerate.example.com/adp
-axcpy config set --api-key your-api-key
+axcpy config set adp_base_url https://axcelerate.example.com/adp
+axcpy config set auth_username adpuser
+axcpy config set auth_password password
 
-# List cases
-axcpy adp cases list
+# List SingleMind servers
+axcpy adp list-entities --type singleMindServer
 
-# Search documents
-axcpy adp docs search "contract AND parties:acme"
+# Query engine
+axcpy adp query-engine --engine myengine --query "document search"
 
-# Execute SearchWebAPI query
-axcpy search query --query "litigation hold" --format json
+# Read configuration
+axcpy adp read-config --config-id "dataSource.file_demo_01"
 ```
+
+**Rich Console Integration**:
+Uses Rich library for:
+- Colored output and syntax highlighting
+- Progress bars for long operations
+- Formatted tables for results
+- Error messages with context
 
 ### 5. FastAPI Service (Future)
 
@@ -320,92 +594,224 @@ AxcelerateException
 └── ConfigurationError
 ```
 
-## Development Phases
+## Implementation Patterns and Principles
 
-### Phase 1: Foundation (Weeks 1-2)
-- [ ] Project structure setup
-- [ ] pyproject.toml configuration with uv
-- [ ] Initialize uv environment and lockfile
-- [ ] Common utilities (auth, config, HTTP)
-- [ ] Basic exception handling
-- [ ] Development environment setup with uv
+### Design Patterns
 
-### Phase 2: ADP Client Library (Weeks 3-4)
-- [ ] Core ADP client implementation
-- [ ] Pydantic models for ADP entities
-- [ ] Endpoint modules (cases, documents, search)
-- [ ] Authentication integration
-- [ ] Unit tests for ADP client
+**1. Builder Pattern** (Task Configuration)
+- Pydantic models act as builders for task configurations
+- Fluent API through model instantiation with named parameters
+- Validation happens at construction time
 
-### Phase 3: SearchWebAPI Client (Weeks 5-6)
+**2. Strategy Pattern** (Authentication)
+- `AuthHandler` protocol defines authentication interface
+- Multiple implementations (`APIKeyAuth`, `OAuth2Auth`)
+- Easily extensible for new auth methods
+
+**3. Adapter Pattern** (Client/Session Layers)
+- `Session` adapts low-level `ADPClient` to high-level task API
+- Converts between generic HTTP responses and typed models
+- Shields users from HTTP details
+
+**4. Factory Pattern** (Task Creation)
+- Task specifications registry (`TASK_SPECS`) maps task types to configs
+- Enables dynamic task creation and validation
+
+**5. Context Manager Pattern**
+- Both sync and async clients implement context managers
+- Ensures proper resource cleanup (connection closing)
+- Pythonic resource management
+
+### Code Quality Principles
+
+**Type Safety**:
+- Comprehensive type hints throughout codebase
+- `mypy` strict mode compliance
+- Pydantic models for runtime validation
+
+**Separation of Concerns**:
+- Clear layering: HTTP client → Session → User code
+- Models separated from business logic
+- Configuration isolated in common module
+
+**DRY (Don't Repeat Yourself)**:
+- `BaseTaskConfig` eliminates field duplication
+- Shared utilities in common module
+- Reusable patterns in sync/async variants
+
+**Explicit is Better Than Implicit**:
+- Field names match wire format exactly (e.g., `adp_listEntities_type`)
+- No magic string conversions or hidden transformations
+- Debug logging shows actual payloads
+
+**Fail Fast**:
+- Pydantic validation at construction
+- HTTP errors raised immediately
+- Type checking catches errors early
+
+### Testing Strategy
+
+**Unit Tests**:
+- Test individual components in isolation
+- Mock HTTP responses with `pytest-httpx`
+- Validate model serialization/deserialization
+
+**Integration Tests**:
+- Test client libraries against mock/test servers
+- Verify request/response flow
+- Test error handling paths
+
+**CLI Tests**:
+- Use Typer's testing utilities
+- Test command parsing and execution
+- Validate output formatting
+
+**Example Test Structure**:
+```python
+# tests/test_adp/test_client.py
+def test_adp_client_run(httpx_mock):
+    """Test synchronous task execution"""
+    httpx_mock.add_response(
+        method="PUT",
+        url="http://example.com/adp/rest/api/task/executeAdpTask",
+        json={"status": "success"}
+    )
+    
+    client = ADPClient(base_url="http://example.com")
+    task = ADPTaskRequest(
+        taskType="List Entities",
+        taskConfiguration=ListEntitiesTaskConfig(
+            adp_listEntities_type="singleMindServer"
+        )
+    )
+    
+    response = client.run(task)
+    assert response.status_code == 200
+```
+
+## Development Phases and Status
+
+### ✅ Phase 1: Foundation (Complete)
+- [x] Project structure setup
+- [x] pyproject.toml configuration with uv
+- [x] Common utilities (auth, config, HTTP)
+- [x] Exception hierarchy
+- [x] Development environment setup
+
+### ✅ Phase 2: ADP Client Library Core (Complete)
+- [x] Core ADPClient implementation (sync)
+- [x] AsyncADPClient implementation
+- [x] Pydantic models for ADP tasks
+- [x] BaseTaskConfig for shared fields
+- [x] ADPTaskRequest wrapper
+- [x] Session and AsyncSession wrappers
+- [x] Type-safe task methods
+
+### ✅ Phase 3: ADP Models and Task Types (Complete)
+- [x] List Entities task (config + result)
+- [x] Manage Host Roles task
+- [x] Query Engine task
+- [x] Read Configuration task
+- [x] Taxonomy Statistic task
+- [x] Task specifications registry
+- [x] Response parsing
+
+### 🚧 Phase 4: CLI Interface (In Progress)
+- [x] Typer CLI framework setup
+- [x] Version command
+- [ ] Configuration management commands
+- [ ] ADP task commands
+- [ ] Output formatting with Rich
+- [ ] CLI testing
+
+### 📋 Phase 5: SearchWebAPI Client (Planned)
 - [ ] Obtain OpenAPI specification
 - [ ] Generate client with Kiota
 - [ ] Create wrapper/adapter layer
 - [ ] Integration with common auth
 - [ ] Unit tests for SearchWebAPI
+- [ ] CLI commands for SearchWebAPI
 
-### Phase 4: CLI Interface (Weeks 7-8)
-- [ ] Typer CLI framework setup
-- [ ] ADP commands implementation
-- [ ] SearchWebAPI commands implementation
-- [ ] Configuration commands
-- [ ] CLI testing and documentation
-
-### Phase 5: Documentation & Examples (Week 9)
+### 📋 Phase 6: Documentation & Examples (Planned)
+- [x] Basic examples (adp_examples.py, adp_async_examples.py)
 - [ ] API reference documentation
 - [ ] User guide and tutorials
-- [ ] Code examples
-- [ ] README and getting started guide
+- [ ] Comprehensive code examples
+- [ ] Enhanced README
+- [ ] Contribution guidelines
 
-### Phase 6: FastAPI Service (Future)
+### 🔮 Phase 7: FastAPI Service (Future)
 - [ ] FastAPI application setup
-- [ ] Endpoint implementation
+- [ ] REST endpoints wrapping client libraries
 - [ ] Authentication/authorization
-- [ ] API documentation
+- [ ] OpenAPI documentation
+- [ ] Rate limiting
 - [ ] Deployment configuration
 
 ## Dependencies
 
 ### Core Dependencies
+
+Current dependencies as defined in `pyproject.toml`:
+
 ```toml
 [project]
 name = "axcpy"
-requires-python = ">=3.9"
+version = "0.1.0"
+requires-python = ">=3.12"
 dependencies = [
-    "httpx>=0.26.0",           # Async HTTP client
-    "pydantic>=2.5.0",         # Data validation
-    "typer>=0.9.0",            # CLI framework
-    "rich>=13.7.0",            # CLI formatting
-    "python-dotenv>=1.0.0",    # Environment management
+    "httpx>=0.26.0",              # Modern async HTTP client with HTTP/2 support
+    "pydantic>=2.5.0",            # Data validation and settings management
+    "pydantic-settings>=2.0.0",   # Settings management with env support
+    "typer>=0.9.0",               # CLI framework with type hints
+    "rich>=13.7.0",               # Terminal formatting and styling
+    "python-dotenv>=1.0.0",       # .env file support
 ]
 ```
 
+**Rationale for Core Dependencies**:
+- **httpx**: Superior to requests - async support, HTTP/2, modern API, connection pooling
+- **pydantic v2**: Runtime validation, serialization, settings management with excellent performance
+- **typer**: Type-based CLI framework with great developer experience
+- **rich**: Beautiful terminal output with progress bars, tables, syntax highlighting
+- **python-dotenv**: Simple .env file support for local development
+
 ### Development Dependencies
+
 ```toml
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.4.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-httpx>=0.30.0",
-    "ruff>=0.1.0",             # Linting and formatting
-    "mypy>=1.7.0",             # Type checking
+    "pytest>=7.4.0",              # Testing framework
+    "pytest-asyncio>=0.21.0",     # Async test support
+    "pytest-httpx>=0.30.0",       # httpx mocking
+    "ruff>=0.1.0",                # Fast linting and formatting
+    "mypy>=1.7.0",                # Static type checking
+    "types-requests",             # Type stubs
 ]
 ```
 
-### Code Generation
+### Optional Feature Dependencies
+
 ```toml
-[tool.uv]
-dev-dependencies = [
-    "kiota>=1.0.0",            # OpenAPI client generator
+[project.optional-dependencies]
+api = [
+    "fastapi>=0.108.0",           # Web framework (future)
+    "uvicorn>=0.25.0",            # ASGI server (future)
 ]
 ```
 
-### Future Dependencies
-```toml
-# To be added to [project.dependencies] when needed
-fastapi = ">=0.108.0"        # Web framework
-uvicorn = ">=0.25.0"         # ASGI server
-```
+### Tool Dependencies
+
+External tools not managed by pip:
+- **Microsoft Kiota**: OpenAPI client generation (npm/dotnet tool)
+- **uv**: Package and environment manager (installed separately)
+
+### Dependency Philosophy
+
+**Minimal Core**: Keep core dependencies minimal and well-maintained
+**Optional Features**: Use optional dependency groups for non-essential features
+**Version Pinning**: Use lower bounds (`>=`) for flexibility, rely on lockfile for reproducibility
+**Quality over Quantity**: Prefer well-maintained, popular libraries with good documentation
 
 ## Environment Management with uv
 
@@ -513,33 +919,239 @@ strict = true
 
 ## Configuration Management
 
-### Configuration File (.env)
+### Configuration Sources
+
+The library uses a layered configuration approach with Pydantic Settings:
+
+1. **Environment Variables** (highest priority)
+2. **.env File** (local development)
+3. **Programmatic Configuration** (code-based)
+4. **Default Values** (lowest priority)
+
+### Environment Variables
+
+All configuration can be set via environment variables with `AXCELERATE_` prefix:
+
 ```bash
+# .env file or system environment
 AXCELERATE_ADP_BASE_URL=https://axcelerate.example.com/adp
 AXCELERATE_SEARCH_BASE_URL=https://axcelerate.example.com/search
 AXCELERATE_API_KEY=your-api-key-here
 AXCELERATE_TIMEOUT=30
 AXCELERATE_MAX_RETRIES=3
+AXCELERATE_VERIFY_SSL=true
 ```
 
 ### Programmatic Configuration
-```python
-from axcpy import configure
 
+```python
+from axcpy.common.config import configure, get_config
+
+# Set configuration programmatically
 configure(
-    adp_url="https://axcelerate.example.com/adp",
-    search_url="https://axcelerate.example.com/search",
-    api_key="your-api-key"
+    adp_base_url="https://axcelerate.example.com/adp",
+    search_base_url="https://axcelerate.example.com/search",
+    api_key="your-api-key",
+    timeout=60,
+    verify_ssl=True
 )
+
+# Access configuration
+config = get_config()
+print(config.adp_base_url)
+print(config.timeout)
+```
+
+### Configuration in Application Code
+
+Configuration is typically used at client initialization:
+
+```python
+from axcpy.common.config import get_config
+from axcpy.adp import ADPClient, Session
+
+# Load config from environment
+config = get_config()
+
+# Use config values
+client = ADPClient(
+    base_url=config.adp_base_url,
+    timeout=config.timeout,
+    ignore_tls=not config.verify_ssl
+)
+
+session = Session(
+    client=client,
+    auth_username="user",
+    auth_password="pass"
+)
+```
+
+### Best Practices
+
+1. **Development**: Use `.env` file (not committed to git)
+2. **Production**: Use environment variables or secrets management
+3. **Testing**: Use programmatic configuration with test values
+4. **CI/CD**: Use environment variables in pipelines
+
+## Detailed API Usage Examples
+
+### Synchronous Client Usage
+
+```python
+from axcpy.adp import ADPClient, Session
+from axcpy.adp.models import (
+    ListEntitiesTaskConfig,
+    QueryEngineTaskConfig,
+    ReadConfigurationTaskConfig
+)
+
+# Create shared client
+client = ADPClient(
+    base_url="https://axcelerate.example.com",
+    timeout=30.0,
+    debug=True  # Enable request/response logging
+)
+
+# Create authenticated session
+session = Session(
+    client=client,
+    auth_username="adpuser",
+    auth_password="password"
+)
+
+# List SingleMind servers
+config = ListEntitiesTaskConfig(
+    adp_listEntities_type="singleMindServer"
+)
+result = session.list_entities(config)
+
+for entity in result.adp_entities_json_output:
+    print(f"Server: {entity.get('displayName')} (ID: {entity.get('id')})")
+
+# Execute query engine search
+query_config = QueryEngineTaskConfig(
+    adp_queryEngine_identifier="my_engine",
+    adp_queryEngine_query="document AND type:email",
+    adp_queryEngine_maxHits=100
+)
+query_result = session.query_engine(query_config)
+print(f"Found {query_result.hit_count} documents")
+
+# Clean up
+client.close()
+```
+
+### Asynchronous Client Usage
+
+```python
+import asyncio
+from axcpy.adp import AsyncADPClient, AsyncSession
+from axcpy.adp.models import ListEntitiesTaskConfig, ManageHostRolesTaskConfig
+
+async def main():
+    # Create async client
+    async with AsyncADPClient(
+        base_url="https://axcelerate.example.com",
+        timeout=60.0
+    ) as client:
+        # Create async session
+        session = AsyncSession(
+            client=client,
+            auth_username="adpuser",
+            auth_password="password"
+        )
+        
+        # Execute multiple tasks concurrently
+        entities_config = ListEntitiesTaskConfig(
+            adp_listEntities_type="singleMindServer"
+        )
+        roles_config = ManageHostRolesTaskConfig()
+        
+        # Run tasks in parallel
+        entities_result, roles_result = await asyncio.gather(
+            session.list_entities(entities_config),
+            session.manage_host_roles(roles_config)
+        )
+        
+        print(f"Found {len(entities_result.adp_entities_json_output)} entities")
+        print(f"Host roles: {roles_result.adp_manageHostRoles_json_output}")
+
+asyncio.run(main())
+```
+
+### Context Manager Usage
+
+```python
+# Automatic resource cleanup with context managers
+with ADPClient(base_url=url) as client:
+    session = Session(client, username, password)
+    result = session.list_entities(config)
+    # Client automatically closed when exiting context
+
+# Async context manager
+async with AsyncADPClient(base_url=url) as client:
+    session = AsyncSession(client, username, password)
+    result = await session.list_entities(config)
+    # Client automatically closed when exiting context
+```
+
+### Error Handling
+
+```python
+from axcpy.adp import ADPClient, Session
+from axcpy.common.exceptions import ADPException, ADPAuthenticationError
+import httpx
+
+client = ADPClient(base_url="https://axcelerate.example.com")
+session = Session(client, "user", "pass")
+
+try:
+    result = session.list_entities(config)
+except httpx.HTTPStatusError as e:
+    print(f"HTTP error: {e.response.status_code} - {e.response.text}")
+except httpx.TimeoutException:
+    print("Request timed out")
+except ADPAuthenticationError:
+    print("Authentication failed")
+except ADPException as e:
+    print(f"ADP error: {e}")
+finally:
+    client.close()
 ```
 
 ## Testing Strategy
 
+**Testing Framework**: pytest + pytest-asyncio + pytest-httpx
+
+**Test Categories**:
+
 1. **Unit Tests**: Test individual components in isolation
-2. **Integration Tests**: Test client libraries against mock/test servers
-3. **CLI Tests**: Test CLI commands with various inputs
-4. **End-to-End Tests**: Test complete workflows
-5. **Mock Services**: Use `httpx-mock` or `responses` for HTTP mocking
+   - Model validation and serialization
+   - Configuration management
+   - Authentication handlers
+   - Utility functions
+
+2. **Integration Tests**: Test client libraries against mocked servers
+   - HTTP request/response flow
+   - Task execution (sync and async)
+   - Error handling paths
+   - Authentication integration
+
+3. **CLI Tests**: Test CLI commands with Typer test client
+   - Command parsing and validation
+   - Output formatting
+   - Configuration management
+   - Error messages
+
+4. **End-to-End Tests**: Test complete workflows (optional)
+   - Multi-step task sequences
+   - Real API interactions (with test environment)
+
+**Mock Strategy**:
+- Use `pytest-httpx` for mocking HTTP requests
+- Create fixtures for common test data
+- Separate fixtures for successful and error responses
 
 ## Documentation Strategy
 
@@ -604,17 +1216,489 @@ ENTRYPOINT ["axcpy"]
 5. Update documentation for API changes
 6. Use conventional commits for commit messages
 
+## Technical Deep Dive
+
+### ADP API Protocol
+
+The Axcelerate ADP service uses a unique PUT-only REST API design:
+
+**Endpoints**:
+- `PUT /adp/rest/api/task/executeAdpTask` - Synchronous execution
+- `PUT /adp/rest/api/task/executeAdpTaskAsync` - Asynchronous execution (returns task ID)
+
+**Request Format**:
+```json
+{
+  "taskType": "List Entities",
+  "taskConfiguration": {
+    "adp_loggingEnabled": true,
+    "adp_executionPersistent": true,
+    "adp_progressTaskTimeout": 0,
+    "adp_taskActive": true,
+    "adp_taskTimeout": 0,
+    "adp_cleanUpHistory": false,
+    "adp_listEntities_type": "singleMindServer",
+    "adp_listEntities_whiteList": ""
+  },
+  "taskDescription": "Optional description",
+  "taskDisplayName": "Optional display name"
+}
+```
+
+**Response Format**:
+```json
+{
+  "status": "success",
+  "adp_entities_json_output": [
+    {
+      "id": "server1",
+      "displayName": "Server 1",
+      "hostName": "server1.example.com"
+    }
+  ]
+}
+```
+
+**Authentication**:
+- Custom header-based: `Auth-Username` and `Auth-Password`
+- Headers passed with every request
+- No session management or tokens
+
+### Type System Architecture
+
+**Pydantic Model Hierarchy**:
+
+```
+BaseModel (Pydantic)
+├── BaseTaskConfig
+│   ├── ListEntitiesTaskConfig
+│   ├── ManageHostRolesTaskConfig
+│   ├── QueryEngineTaskConfig
+│   ├── ReadConfigurationTaskConfig
+│   └── TaxonomyStatisticTaskConfig
+├── ADPTaskRequest
+└── Result Models
+    ├── ListEntitiesResult
+    ├── ManageHostRolesResult
+    ├── QueryEngineResult
+    ├── ReadConfigurationResult
+    └── TaxonomyStatisticResult
+```
+
+**Type Safety Benefits**:
+- Compile-time type checking with mypy
+- Runtime validation with Pydantic
+- IDE autocomplete and inline documentation
+- Self-documenting code
+- Reduced bugs from typos or incorrect types
+
+### Async/Sync Duality
+
+The library provides both sync and async variants:
+
+**Synchronous**:
+- `ADPClient` - Basic HTTP operations
+- `Session` - High-level task API
+- Uses `httpx.Client`
+- Blocks on I/O
+
+**Asynchronous**:
+- `AsyncADPClient` - Async HTTP operations
+- `AsyncSession` - Async task API
+- Uses `httpx.AsyncClient`
+- Non-blocking, enables concurrency
+
+**Code Sharing**:
+- Models are shared between sync/async
+- Similar API surface for consistency
+- Parallel implementation for clarity
+
+**When to Use Each**:
+- **Sync**: Scripts, simple automations, interactive use
+- **Async**: High-performance applications, concurrent operations, web services
+
+### Performance Considerations
+
+**Connection Pooling**:
+- httpx automatically pools connections
+- Reuse client instances across requests
+- Close clients when done to free resources
+
+**Concurrent Requests**:
+```python
+# Async allows concurrent execution
+async with AsyncADPClient(base_url) as client:
+    session = AsyncSession(client, user, pass)
+    
+    # Run multiple tasks concurrently
+    results = await asyncio.gather(
+        session.list_entities(config1),
+        session.query_engine(config2),
+        session.read_configuration(config3)
+    )
+```
+
+**Memory Management**:
+- Streaming responses for large payloads (future)
+- Pagination for list operations (future)
+- Connection limits to prevent resource exhaustion
+
+**Timeouts**:
+- Global default timeout at client level
+- Per-request timeout override
+- Prevents hung requests
+
+### Security Best Practices
+
+**Credential Management**:
+```python
+# ❌ BAD - hardcoded credentials
+client = ADPClient(base_url="https://example.com")
+session = Session(client, "user", "password123")
+
+# ✅ GOOD - environment variables
+import os
+username = os.environ["ADP_USERNAME"]
+password = os.environ["ADP_PASSWORD"]
+session = Session(client, username, password)
+
+# ✅ BEST - configuration management
+from axcpy.common.config import get_config
+config = get_config()
+# Credentials from secure environment
+```
+
+**TLS/SSL**:
+- Always use HTTPS in production
+- `ignore_tls=True` only for development/testing
+- Verify certificates in production
+
+**Logging**:
+- Debug mode logs request/response payloads
+- Never log credentials
+- Sanitize sensitive data in logs
+
+**Input Validation**:
+- Pydantic validates all inputs
+- Prevents injection attacks
+- Type coercion with validation
+
+### Extensibility Points
+
+**Adding New Task Types**:
+
+1. Create Pydantic models in `adp/models/`:
+```python
+# my_task.py
+from .base import BaseTaskConfig
+
+class MyTaskConfig(BaseTaskConfig):
+    adp_myTask_parameter: str
+    
+class MyTaskResult(BaseModel):
+    adp_myTask_output: list[dict]
+```
+
+2. Update `TaskConfigurationType` union in `request.py`
+
+3. Add method to `Session`:
+```python
+def my_task(self, config: MyTaskConfig) -> MyTaskResult:
+    task = ADPTaskRequest(
+        taskType="My Task",
+        taskConfiguration=config
+    )
+    response_data = self.run(task)
+    return MyTaskResult.model_validate(response_data)
+```
+
+**Adding Authentication Methods**:
+
+Create new auth handler in `common/auth.py`:
+```python
+class CustomAuth:
+    def __init__(self, token: str):
+        self.token = token
+    
+    def get_headers(self) -> dict[str, str]:
+        return {"X-Custom-Auth": self.token}
+```
+
+**Custom HTTP Middleware**:
+
+Extend httpx transport for custom behavior:
+```python
+import httpx
+
+class LoggingTransport(httpx.HTTPTransport):
+    def handle_request(self, request):
+        logger.info(f"Request: {request.method} {request.url}")
+        return super().handle_request(request)
+
+client = ADPClient(base_url=url)
+client._client._transport = LoggingTransport()
+```
+
+## Deployment Considerations
+
+### Package Distribution
+
+**PyPI Release**:
+```bash
+# Build package
+uv build
+
+# Check package
+twine check dist/*
+
+# Upload to PyPI
+twine upload dist/*
+
+# Test installation
+pip install axcpy
+```
+
+**Installation Methods**:
+```bash
+# From PyPI (when published)
+pip install axcpy
+
+# From source
+pip install git+https://github.com/xifanyan/axcpy.git
+
+# Development installation
+git clone https://github.com/xifanyan/axcpy.git
+cd axcpy
+uv sync --all-extras
+```
+
+### Docker Deployment (Future)
+
+```dockerfile
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install uv
+RUN pip install uv
+
+# Copy project files
+COPY pyproject.toml .
+COPY src/ ./src/
+
+# Install dependencies
+RUN uv sync --no-dev
+
+# Set entry point
+ENTRYPOINT ["uv", "run", "axcpy"]
+```
+
+### CI/CD Integration
+
+**GitHub Actions Example**:
+```yaml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Run tests
+        run: uv run pytest
+      - name: Type check
+        run: uv run mypy src/
+      - name: Lint
+        run: uv run ruff check src/
+```
+
+## Future Enhancements
+
+### Planned Features
+
+1. **Enhanced Error Handling**
+   - Retry logic with exponential backoff
+   - Circuit breaker pattern for failed services
+   - Detailed error context and recovery suggestions
+
+2. **Batch Operations**
+   - Submit multiple tasks in one request
+   - Bulk data operations
+   - Progress tracking for batch jobs
+
+3. **Response Caching**
+   - Cache frequently accessed data
+   - TTL-based cache invalidation
+   - Configurable cache backends
+
+4. **Streaming Support**
+   - Stream large responses
+   - Chunked file uploads/downloads
+   - Real-time progress updates
+
+5. **Advanced CLI Features**
+   - Interactive mode with prompts
+   - Output to multiple formats (JSON, CSV, Excel)
+   - Shell completion
+   - Command aliases
+
+6. **Observability**
+   - OpenTelemetry integration
+   - Structured logging
+   - Metrics and monitoring
+   - Distributed tracing
+
+7. **Plugin System**
+   - Custom task types via plugins
+   - Extension hooks
+   - Third-party integrations
+
+8. **GraphQL Support** (if Axcelerate adds it)
+   - GraphQL client
+   - Query builder
+   - Schema introspection
+
+### Research Areas
+
+- **Async Task Polling**: Automated polling for async task completion
+- **WebSocket Support**: Real-time updates and notifications
+- **Rate Limiting**: Client-side rate limiting for API quotas
+- **Request Signing**: Cryptographic request signing for enhanced security
+- **Multi-tenancy**: Support for multiple Axcelerate instances
+
+## Contributing Guidelines
+
+### Code Style
+
+- Follow PEP 8 style guidelines
+- Use `ruff` for linting and formatting
+- Maximum line length: 100 characters
+- Use type hints for all functions
+- Write docstrings in Google style
+
+### Development Workflow
+
+```bash
+# Setup
+git clone https://github.com/xifanyan/axcpy.git
+cd axcpy
+uv sync --all-extras
+
+# Create feature branch
+git checkout -b feature/my-feature
+
+# Make changes
+# ...
+
+# Run tests
+uv run pytest
+
+# Type check
+uv run mypy src/
+
+# Lint and format
+uv run ruff check src/
+uv run ruff format src/
+
+# Commit
+git add .
+git commit -m "feat: add my feature"
+
+# Push and create PR
+git push origin feature/my-feature
+```
+
+### Commit Message Convention
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+
+**Examples**:
+```
+feat(adp): add support for export task
+fix(cli): handle missing configuration gracefully
+docs(readme): update installation instructions
+test(session): add tests for async session
+```
+
+### Pull Request Process
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with tests
+4. Ensure all tests pass
+5. Update documentation
+6. Submit pull request with clear description
+7. Address review feedback
+
+### Testing Requirements
+
+- Maintain or improve code coverage
+- Add unit tests for new functions
+- Add integration tests for new features
+- Update existing tests as needed
+- All tests must pass before merge
+
 ## References
 
-- [OpenText Axcelerate Documentation](https://www.opentext.com/products/axcelerate)
-- [Microsoft Kiota Documentation](https://learn.microsoft.com/en-us/openapi/kiota/)
-- [Typer Documentation](https://typer.tiangolo.com/)
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [Pydantic Documentation](https://docs.pydantic.dev/)
+### Official Documentation
+- [OpenText Axcelerate](https://www.opentext.com/products/axcelerate)
+- [Python httpx](https://www.python-httpx.org/)
+- [Pydantic V2](https://docs.pydantic.dev/)
+- [Typer](https://typer.tiangolo.com/)
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Microsoft Kiota](https://learn.microsoft.com/en-us/openapi/kiota/)
+- [uv Package Manager](https://github.com/astral-sh/uv)
+
+### Related Projects
+- [httpx](https://github.com/encode/httpx) - HTTP client
+- [pydantic](https://github.com/pydantic/pydantic) - Data validation
+- [typer](https://github.com/tiangolo/typer) - CLI framework
+- [rich](https://github.com/Textualize/rich) - Terminal formatting
+
+### Python Standards
+- [PEP 8](https://peps.python.org/pep-0008/) - Style Guide
+- [PEP 484](https://peps.python.org/pep-0484/) - Type Hints
+- [PEP 517](https://peps.python.org/pep-0517/) - Build System
+- [PEP 621](https://peps.python.org/pep-0621/) - Project Metadata
 
 ---
 
-**Version**: 1.0  
+## Document Information
+
+**Version**: 2.0  
 **Last Updated**: December 17, 2025  
-**Author**: Development Team  
-**Status**: Planning Phase
+**Authors**: Paul Yan, Development Team  
+**Status**: Active Development  
+**License**: MIT  
+
+**Change Log**:
+- v2.0 (2025-12-17): Comprehensive update reflecting actual implementation
+- v1.0 (Initial): Planning phase document
+
+**Maintainers**: 
+- Paul Yan (pyan@opentext.com)
+
+**Review Cycle**: Update design document when:
+- Major architectural changes occur
+- New components are added
+- APIs change significantly
+- New development phases begin

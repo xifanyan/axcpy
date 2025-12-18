@@ -1,5 +1,5 @@
 """SearchWebAPI Client Library (Kiota-generated)."""
 
-# from axcpy.searchwebapi.client import SearchWebAPIClient
+from axcpy.searchwebapi.generated.search_web_api_client import SearchWebApiClient
 
-# __all__ = ["SearchWebAPIClient"]
+__all__ = ["SearchWebApiClient"]
