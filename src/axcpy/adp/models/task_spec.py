@@ -8,6 +8,7 @@ from .manage_host_roles import ManageHostRolesResult
 from .query_engine import QueryEngineResult
 from .read_configuration import ConfigurationInfo, ReadConfigurationResult
 from .taxonomy_statistic import TaxonomyStatisticResult, TaxonomyStatisticsOutput
+from .export_documents import ExportDocumentsResult
 
 
 class _TaskSpec(TypedDict):
@@ -130,6 +131,22 @@ TASK_SPECS: dict[str, _TaskSpec] = {
                     else None
                 )
             ),
+        ),
+    },
+    "export_documents": {
+        "task_type": "Export Documents",
+        "display_name": "Export documents task",
+        "description": "Export documents in CSV format.",
+        "parser": lambda md: ExportDocumentsResult(
+            adp_exportDocuments_searchResultSize=(
+                int(md.get("adp_exportDocuments_searchResultSize", 0))
+                if md.get("adp_exportDocuments_searchResultSize") is not None
+                else None
+            ),
+            adp_exportDocuments_exportFileName=md.get(
+                "adp_exportDocuments_exportFileName"
+            ),
+            adp_exportDocuments_exportPath=md.get("adp_exportDocuments_exportPath"),
         ),
     },
 }

@@ -17,6 +17,10 @@ from axcpy.adp.models.taxonomy_statistic import (
     TaxonomyStatisticResult,
     TaxonomyStatisticTaskConfig,
 )
+from axcpy.adp.models.export_documents import (
+    ExportDocumentsResult,
+    ExportDocumentsTaskConfig,
+)
 from axcpy.adp.models.request import ADPTaskRequest
 
 from .async_client import AsyncADPClient
@@ -188,6 +192,18 @@ class AsyncSession:
     ) -> TaxonomyStatisticResult:
         return await self.run_task(
             "taxonomy_statistic",
+            config=config,
+            timeout=timeout,
+        )
+
+    async def export_documents(
+        self,
+        config: ExportDocumentsTaskConfig,
+        *,
+        timeout: float | None = None,
+    ) -> ExportDocumentsResult:
+        return await self.run_task(
+            "export_documents",
             config=config,
             timeout=timeout,
         )

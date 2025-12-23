@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from axcpy.adp import ADPClient, Session
 from axcpy.adp.models import (
+    ExportDocumentsTaskConfig,
     ListEntitiesTaskConfig,
     ManageHostRolesTaskConfig,
     QueryEngineTaskConfig,
@@ -98,6 +99,24 @@ def read_configuration_example(session: Session):
             # Show first few parameters if they exist
             if config_info.Global.Static.Parameters:
                 print(f"{config_info.Global.Static.Parameters}")
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+
+def export_documents_example(session: Session):
+    """Example showing Export Documents task using session.export_documents() method."""
+    print("\n[*] Example 6: Export Documents Task")
+
+    fieldMap = '{"rm_numeric_identifier": "Document ID", "rm_title": "Title" }'
+    try:
+        config = ExportDocumentsTaskConfig(
+            adp_exportDocuments_applicationIdentifier="documentHold.demo00001",
+            adp_exportDocuments_exportName="demo_export",
+            adp_exportDocuments_exportFields=fieldMap,
+        )
+        result = session.export_documents(config)
+        print(result)
 
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -202,11 +221,12 @@ def main():
     print("[*] This same session will be reused for all task examples")
 
     # Pass the session to all example functions
-    list_entities_example(session)
-    manage_host_roles_example(session)
-    read_configuration_example(session)
-    query_engine_example(session)
-    taxonomy_statistics_example(session)
+    # list_entities_example(session)
+    # manage_host_roles_example(session)
+    # read_configuration_example(session)
+    # query_engine_example(session)
+    # taxonomy_statistics_example(session)
+    export_documents_example(session)
 
 
 if __name__ == "__main__":

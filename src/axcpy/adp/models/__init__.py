@@ -20,6 +20,10 @@ from axcpy.adp.models.taxonomy_statistic import (
     TaxonomyStatisticResult,
     TaxonomyStatisticTaskConfig,
 )
+from axcpy.adp.models.export_documents import (
+    ExportDocumentsResult,
+    ExportDocumentsTaskConfig,
+)
 
 __all__ = [
     "BaseTaskConfig",
@@ -35,4 +39,6 @@ __all__ = [
     "ReadConfigurationTaskConfig",
     "TaxonomyStatisticResult",
     "TaxonomyStatisticTaskConfig",
+    "ExportDocumentsResult",
+    "ExportDocumentsTaskConfig",
 ]

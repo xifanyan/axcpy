@@ -7,6 +7,7 @@ from .manage_host_roles import ManageHostRolesTaskConfig
 from .query_engine import QueryEngineTaskConfig
 from .read_configuration import ReadConfigurationTaskConfig
 from .taxonomy_statistic import TaxonomyStatisticTaskConfig
+from .export_documents import ExportDocumentsTaskConfig
 
 TaskConfigurationType = (
     ListEntitiesTaskConfig
@@ -14,6 +15,7 @@ TaskConfigurationType = (
     | QueryEngineTaskConfig
     | ReadConfigurationTaskConfig
     | TaxonomyStatisticTaskConfig
+    | ExportDocumentsTaskConfig
 )
 
 
