@@ -6,6 +6,46 @@
 
 The library emphasizes type safety, modern Python practices, and developer experience through comprehensive tooling and documentation.
 
+## Current Status (December 2025)
+
+**✅ Production Ready:**
+- **ADP Client**: Fully implemented with sync/async support, 5+ task types, comprehensive models
+- **SearchWebAPI Client**: Generated with Kiota, tested and working with session management
+- **Package Structure**: Unified package with optional dependencies for flexibility
+
+**🚧 In Progress:**
+- CLI interface (basic structure in place, commands in development)
+- Documentation (DESIGN doc complete, API reference and tutorials planned)
+
+**📋 Planned:**
+- FastAPI web service wrapper
+- Additional CLI commands
+- Enhanced testing coverage
+
+**Installation:**
+```bash
+# Core (ADP only)
+pip install axcpy
+
+# With SearchWebAPI support
+pip install axcpy[searchwebapi]
+
+# From local build
+pip install dist/axcpy-0.1.0-py3-none-any.whl[searchwebapi]
+```
+
+**Quick Start:**
+```python
+# ADP Client
+from axcpy.adp import ADPClient, Session
+client = ADPClient(base_url="https://server.com")
+session = Session(client, "user", "pass")
+
+# SearchWebAPI Client
+from axcpy.searchwebapi import SearchWebApiClient
+# See examples/searchWebApi_examples.py for full usage
+```
+
 ## Goals and Objectives
 
 - **Primary**: Provide robust Python client libraries for Axcelerate's REST services (ADP and SearchWebAPI)
@@ -51,12 +91,12 @@ The library emphasizes type safety, modern Python practices, and developer exper
 ## Technology Stack
 
 ### Core Technologies
-- **Python**: 3.9+ (for modern type hints and features)
+- **Python**: 3.12+ (primary target, 3.9+ supported)
 - **Package Manager**: `uv` (fast Python package and environment manager)
-- **HTTP Client**: `httpx` (async support for future scalability)
+- **HTTP Client**: `httpx` (async support, HTTP/2, connection pooling)
 - **CLI Framework**: `typer` (modern, type-based CLI)
-- **Code Generation**: Microsoft Kiota (for SearchWebAPI OpenAPI client)
-- **Serialization**: `pydantic` (data validation and settings management)
+- **Code Generation**: Microsoft Kiota (for SearchWebAPI OpenAPI client generation)
+- **Serialization**: `pydantic` v2 (data validation and settings management)
 
 ### Future Technologies
 - **Web Framework**: FastAPI (REST API service)
@@ -75,7 +115,7 @@ axcpy/
 │
 ├── src/
 │   └── axcpy/
-│       ├── __init__.py           # Package initialization
+│       ├── __init__.py           # Package initialization with subpackage exports
 │       ├── __version__.py        # Version information
 │       │
 │       ├── adp/                  # ADP Client Library
@@ -814,23 +854,29 @@ def test_adp_client_run(httpx_mock):
 - [ ] CLI testing
 
 ### ✅ Phase 5: SearchWebAPI Client (Complete)
-- [x] Obtain OpenAPI specification
-- [x] Generate client with Kiota
+- [x] Obtain OpenAPI specification (api_spec.json)
+- [x] Generate client with Kiota (SearchWebApiClient)
 - [x] Generated client structure (login, logout, projects, collections, fields)
 - [x] Authentication providers (Basic Auth with session management)
-- [x] Working examples (searchWebApi_examples.py)
-- [x] PowerShell generation script
+- [x] Working examples (searchWebApi_examples.py - fully tested)
+- [x] PowerShell generation script (generate_searchwebapi.ps1)
+- [x] Bash generation script (generate_searchwebapi.sh)
 - [x] Package exports via __init__.py
+- [x] Kiota dependencies installed and configured
+- [x] Session capture and reuse implementation
 - [ ] Wrapper/adapter layer (optional - direct usage is clean)
 - [ ] Unit tests for SearchWebAPI
 - [ ] CLI commands for SearchWebAPI
 
-### 📋 Phase 6: Documentation & Examples (Planned)
-- [x] Basic examples (adp_examples.py, adp_async_examples.py)
-- [ ] API reference documentation
+### 📋 Phase 6: Documentation & Examples (In Progress)
+- [x] Basic examples (adp_examples.py, adp_async_examples.py, searchWebApi_examples.py)
+- [x] Comprehensive DESIGN.md documentation
+- [x] Package building and distribution guide
+- [x] Installation strategies documentation
+- [x] Multi-client usage examples
+- [ ] API reference documentation (auto-generated)
 - [ ] User guide and tutorials
-- [ ] Comprehensive code examples
-- [ ] Enhanced README
+- [ ] Enhanced README with quick start
 - [ ] Contribution guidelines
 
 ### 🔮 Phase 7: FastAPI Service (Future)
@@ -1564,6 +1610,302 @@ client = ADPClient(base_url=url)
 client._client._transport = LoggingTransport()
 ```
 
+## Building and Using the Package
+
+### Package Architecture Decision
+
+There are two approaches to packaging:
+
+**Current Approach: Unified Package** (✅ Implemented)
+- Single package: `axcpy`
+- Contains both `adp` and `searchwebapi` as subpackages
+- Install: `pip install axcpy[searchwebapi]`
+- Import: `from axcpy.adp import ...` or `from axcpy import adp`
+
+**Alternative: Separate Packages** (Optional, not implemented)
+- Multiple packages: `axcpy-adp`, `axcpy-searchwebapi`
+- Each installable independently
+- Install: `pip install axcpy-adp` or `pip install axcpy-searchwebapi`
+- Import: `from adp import ...` or `import adp`
+
+The unified package approach is recommended because:
+- ✅ Single installation and versioning
+- ✅ Shared dependencies and utilities
+- ✅ Easier maintenance
+- ✅ Optional dependencies avoid installing unused code
+- ✅ Both modules can work together seamlessly
+
+### Building the Package
+
+The axcpy package can be built and distributed for use in external projects:
+
+**Build Process**:
+```powershell
+# Navigate to project root
+cd C:\Users\pyan\github\axcpy
+
+# Build the package (creates wheel and source distribution)
+uv build
+
+# Output will be in dist/
+# - axcpy-0.1.0-py3-none-any.whl (wheel distribution)
+# - axcpy-0.1.0.tar.gz (source distribution)
+```
+
+### Installation Strategies
+
+#### Strategy 1: Install from Local Build (Development/Testing)
+
+```powershell
+# Install the built wheel directly
+pip install dist/axcpy-0.1.0-py3-none-any.whl
+
+# Or install with SearchWebAPI dependencies
+pip install "dist/axcpy-0.1.0-py3-none-any.whl[searchwebapi]"
+
+# Or install all optional dependencies
+pip install "dist/axcpy-0.1.0-py3-none-any.whl[searchwebapi,api,dev]"
+```
+
+#### Strategy 2: Install from Local Directory (Editable Mode)
+
+```powershell
+# Install in editable mode (changes reflect immediately)
+pip install -e .
+
+# With SearchWebAPI dependencies
+pip install -e ".[searchwebapi]"
+
+# With all dependencies
+pip install -e ".[searchwebapi,api,dev]"
+```
+
+#### Strategy 3: Install from Git Repository
+
+```bash
+# Direct from GitHub (main branch)
+pip install git+https://github.com/xifanyan/axcpy.git
+
+# From specific branch
+pip install git+https://github.com/xifanyan/axcpy.git@feature-branch
+
+# With SearchWebAPI dependencies
+pip install "git+https://github.com/xifanyan/axcpy.git#egg=axcpy[searchwebapi]"
+```
+
+#### Strategy 4: PyPI Release (Future)
+
+```bash
+# Once published to PyPI
+pip install axcpy
+
+# With optional dependencies
+pip install axcpy[searchwebapi]
+```
+
+### Using Both ADP and SearchWebAPI in External Projects
+
+Once installed, you can use both clients in your external Python projects.
+
+#### Import Styles
+
+The package supports multiple import styles for convenience:
+
+```python
+# Style 1: Direct subpackage import (explicit)
+from axcpy.adp import ADPClient, Session
+from axcpy.searchwebapi import SearchWebApiClient
+
+# Style 2: Via parent package (convenient)
+import axcpy
+client = axcpy.adp.ADPClient(base_url="...")
+search_client = axcpy.searchwebapi.SearchWebApiClient(adapter)
+
+# Style 3: Import subpackage as module
+from axcpy import adp, searchwebapi
+client = adp.ADPClient(base_url="...")
+search_client = searchwebapi.SearchWebApiClient(adapter)
+```
+
+#### Example 1: Using ADP Client Only
+
+```python
+# external_project/my_script.py
+from axcpy.adp import ADPClient, Session
+from axcpy.adp.models import ListEntitiesTaskConfig
+
+# No additional dependencies needed (already in core)
+client = ADPClient(base_url="https://axcelerate.example.com")
+session = Session(client, "username", "password")
+
+config = ListEntitiesTaskConfig(adp_listEntities_type="singleMindServer")
+result = session.list_entities(config)
+print(f"Found {len(result.adp_entities_json_output)} entities")
+```
+
+#### Example 2: Using SearchWebAPI Client Only
+
+```python
+# external_project/search_script.py
+# Requires: pip install axcpy[searchwebapi]
+
+import asyncio
+import httpx
+from kiota_http.httpx_request_adapter import HttpxRequestAdapter
+from axcpy.searchwebapi import SearchWebApiClient
+
+class BasicAuthProvider:
+    def __init__(self, username: str, password: str):
+        self.username = username
+        self.password = password
+        self.session_id = None
+    
+    async def authenticate_request(self, request, additional_authentication_context=None):
+        import base64
+        if hasattr(request, "headers"):
+            if self.session_id:
+                request.headers.try_add("SWA-SESSION", self.session_id)
+            else:
+                credentials = f"{self.username}:{self.password}"
+                encoded = base64.b64encode(credentials.encode()).decode()
+                request.headers.try_add("Authorization", f"Basic {encoded}")
+        return request
+
+async def main():
+    auth_provider = BasicAuthProvider("admin", "password")
+    http_client = httpx.AsyncClient(verify=False, timeout=30.0)
+    request_adapter = HttpxRequestAdapter(auth_provider, http_client=http_client)
+    request_adapter.base_url = "https://server:8443/searchWebApi"
+    
+    client = SearchWebApiClient(request_adapter)
+    await client.login.post()
+    
+    projects = await client.projects.get()
+    print(f"Found projects: {projects}")
+    
+    await client.logout.delete()
+    await http_client.aclose()
+
+asyncio.run(main())
+```
+
+#### Example 3: Using Both ADP and SearchWebAPI
+
+```python
+# external_project/combined_workflow.py
+# Requires: pip install axcpy[searchwebapi]
+
+import asyncio
+import httpx
+from axcpy.adp import ADPClient, Session
+from axcpy.adp.models import QueryEngineTaskConfig
+from axcpy.searchwebapi import SearchWebApiClient
+from kiota_http.httpx_request_adapter import HttpxRequestAdapter
+
+# Your authentication providers
+class BasicAuthProvider:
+    # ... (as shown above)
+    pass
+
+async def main():
+    # Setup ADP client
+    adp_client = ADPClient(base_url="https://axcelerate.example.com")
+    adp_session = Session(adp_client, "adpuser", "adppass")
+    
+    # Setup SearchWebAPI client
+    auth = BasicAuthProvider("admin", "admin")
+    http_client = httpx.AsyncClient(verify=False)
+    adapter = HttpxRequestAdapter(auth, http_client=http_client)
+    adapter.base_url = "https://server:8443/searchWebApi"
+    search_client = SearchWebApiClient(adapter)
+    
+    # Use ADP for data management
+    query_config = QueryEngineTaskConfig(
+        adp_queryEngine_identifier="engine1",
+        adp_queryEngine_query="document search"
+    )
+    adp_result = adp_session.query_engine(query_config)
+    print(f"ADP Results: {adp_result.hit_count} hits")
+    
+    # Use SearchWebAPI for search operations
+    await search_client.login.post()
+    projects = await search_client.projects.get()
+    print(f"SearchWebAPI Projects: {len(projects.results)} projects")
+    
+    # Cleanup
+    await search_client.logout.delete()
+    await http_client.aclose()
+    adp_client.close()
+
+asyncio.run(main())
+```
+
+### Requirements File for External Projects
+
+Create a `requirements.txt` for your external project:
+
+```text
+# requirements.txt for project using ADP only
+axcpy
+
+# Or for project using both ADP and SearchWebAPI
+axcpy[searchwebapi]
+
+# With specific version
+axcpy[searchwebapi]==0.1.0
+
+# From local build
+./path/to/axcpy/dist/axcpy-0.1.0-py3-none-any.whl[searchwebapi]
+```
+
+### Project Setup for External Projects
+
+```powershell
+# Create new project
+mkdir my_axcelerate_project
+cd my_axcelerate_project
+
+# Create virtual environment
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# Install axcpy from local build
+pip install "C:\Users\pyan\github\axcpy\dist\axcpy-0.1.0-py3-none-any.whl[searchwebapi]"
+
+# Or install from source in editable mode
+pip install -e "C:\Users\pyan\github\axcpy[searchwebapi]"
+
+# Create your script
+New-Item my_script.py
+
+# Run your script
+python my_script.py
+```
+
+### Dependency Management
+
+The package has smart dependency management:
+
+**Core Dependencies** (always installed):
+- httpx, pydantic, typer, rich, python-dotenv
+
+**Optional Dependencies** (install as needed):
+- `searchwebapi`: Kiota client dependencies (only if using SearchWebAPI)
+- `api`: FastAPI and uvicorn (only if building API service)
+- `dev`: Testing and development tools (only for contributors)
+
+**Minimal Installation**:
+```bash
+# Only ADP client + core deps (~5MB)
+pip install axcpy
+```
+
+**Full Installation**:
+```bash
+# Everything including SearchWebAPI (~15MB)
+pip install axcpy[searchwebapi]
+```
+
 ## Deployment Considerations
 
 ### Package Distribution
@@ -1583,18 +1925,19 @@ twine upload dist/*
 pip install axcpy
 ```
 
-**Installation Methods**:
+**Installation Methods Summary**:
 ```bash
 # From PyPI (when published)
-pip install axcpy
+pip install axcpy[searchwebapi]
 
-# From source
+# From source repository
 pip install git+https://github.com/xifanyan/axcpy.git
 
-# Development installation
-git clone https://github.com/xifanyan/axcpy.git
-cd axcpy
-uv sync --all-extras
+# From local build
+pip install dist/axcpy-0.1.0-py3-none-any.whl[searchwebapi]
+
+# Development installation (editable)
+pip install -e .[searchwebapi]
 ```
 
 ### Docker Deployment (Future)
@@ -1809,13 +2152,14 @@ test(session): add tests for async session
 
 ## Document Information
 
-**Version**: 2.0  
-**Last Updated**: December 17, 2025  
+**Version**: 2.1  
+**Last Updated**: December 19, 2025  
 **Authors**: Paul Yan, Development Team  
 **Status**: Active Development  
 **License**: MIT  
 
 **Change Log**:
+- v2.1 (2025-12-19): Updated with SearchWebAPI implementation, Kiota generation, package building strategies
 - v2.0 (2025-12-17): Comprehensive update reflecting actual implementation
 - v1.0 (Initial): Planning phase document
 

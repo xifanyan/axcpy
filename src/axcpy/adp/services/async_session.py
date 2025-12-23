@@ -107,6 +107,23 @@ class AsyncSession:
         response = await self._client.run_async(task, headers=merged, timeout=timeout)
         return self._process_response(response)
 
+    async def statusAndProgress(
+        self,
+        task: ADPTaskRequest,
+        *,
+        headers: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> None | dict:
+        """Check the status and progress of an asynchronously submitted task.
+
+        Returns response JSON (dict) or None if no JSON body.
+        """
+        merged = {**self._base_headers, **(headers or {})}
+        response = await self._client.statusAndProgress(
+            task, headers=merged, timeout=timeout
+        )
+        return self._process_response(response)
+
     async def __aenter__(self) -> "AsyncSession":  # pragma: no cover
         return self
 

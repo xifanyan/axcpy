@@ -140,5 +140,20 @@ class AsyncADPClient:
             timeout=timeout,
         )
 
+    async def statusAndProgress(
+        self,
+        task: ADPTaskRequest,
+        *,
+        headers: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> httpx.Response:
+        """Check the status and progress of an asynchronously submitted task."""
+        return await self._execute_task(
+            task,
+            "/adp/rest/api/task/statusAndProgress",
+            headers=headers,
+            timeout=timeout,
+        )
+
 
 __all__ = ["AsyncADPClient"]
