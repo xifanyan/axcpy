@@ -53,6 +53,12 @@ class QueryEngineResult(BaseModel):
     """Result from Query Engine task.
 
     Contains output metadata keys populated by the task execution.
+
+    Example:
+    {
+        "adp_query_engine_aggregated_value": "524983291",
+        "adp_query_engine_documents_count": "14322"
+    }
     """
 
     adp_query_engine_aggregated_value: str | int | float | None = None

@@ -225,8 +225,8 @@ def main():
     # manage_host_roles_example(session)
     # read_configuration_example(session)
     # query_engine_example(session)
-    # taxonomy_statistics_example(session)
-    export_documents_example(session)
+    taxonomy_statistics_example(session)
+    # export_documents_example(session)
 
 
 if __name__ == "__main__":

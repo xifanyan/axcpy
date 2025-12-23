@@ -121,6 +121,32 @@ class TaxonomyStatisticResult(BaseModel):
     """Result from Taxonomy Statistic task.
 
     Contains output metadata keys populated by the task execution.
+
+    Example:
+    {
+        "adp_taxonomy_statistics_json_output": {
+            "date": "Tue Dec 23 16:22:41 EST 2025",
+            "searchParameter": [
+                {"key": "rm_main", "value": "[*]"},
+                {"key": "rm_pagesize", "value": "[-1]"}
+            ],
+            "statistics": {
+                "taxonomy": [
+                    {
+                        "id": "rm_document_hold",
+                        "category": [
+                            {
+                                "id": "Demo_Review",
+                                "displayName": "Demo_Review",
+                                "count": 14322
+                            },
+                            ...
+                        ]
+                    }
+                ]
+            }
+        }
+    }
     """
 
     adp_taxonomy_statistics_json_output: TaxonomyStatisticsOutput | None = None

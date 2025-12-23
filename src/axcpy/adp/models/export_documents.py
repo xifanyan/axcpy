@@ -50,6 +50,13 @@ class ExportDocumentsResult(BaseModel):
     """Result from Export Documents task.
 
     Contains output metadata keys populated by the task execution.
+
+    Example:
+    {
+        "adp_exportDocuments_searchResultSize": 14322,
+        "adp_exportDocuments_exportFileName": "demo_export.csv",
+        "adp_exportDocuments_exportPath": "E:\\MindServer\\Projects\\tomcatServer.default\\..\\export\\demo_export"
+    }
     """
 
     adp_exportDocuments_searchResultSize: int | None = None
