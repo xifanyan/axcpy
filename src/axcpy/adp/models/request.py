@@ -8,6 +8,7 @@ from .query_engine import QueryEngineTaskConfig
 from .read_configuration import ReadConfigurationTaskConfig
 from .taxonomy_statistic import TaxonomyStatisticTaskConfig
 from .export_documents import ExportDocumentsTaskConfig
+from .create_data_source import CreateDataSourceTaskConfig
 
 TaskConfigurationType = (
     ListEntitiesTaskConfig
@@ -16,6 +17,7 @@ TaskConfigurationType = (
     | ReadConfigurationTaskConfig
     | TaxonomyStatisticTaskConfig
     | ExportDocumentsTaskConfig
+    | CreateDataSourceTaskConfig
 )
 
 

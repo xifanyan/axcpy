@@ -21,6 +21,10 @@ from axcpy.adp.models.export_documents import (
     ExportDocumentsResult,
     ExportDocumentsTaskConfig,
 )
+from axcpy.adp.models.create_data_source import (
+    CreateDataSourceResult,
+    CreateDataSourceTaskConfig,
+)
 from axcpy.adp.models.request import ADPTaskRequest
 
 from .async_client import AsyncADPClient
@@ -204,6 +208,32 @@ class AsyncSession:
     ) -> ExportDocumentsResult:
         return await self.run_task(
             "export_documents",
+            config=config,
+            timeout=timeout,
+        )
+
+    async def create_data_source(
+        self,
+        config: CreateDataSourceTaskConfig,
+        *,
+        timeout: float | None = None,
+    ) -> CreateDataSourceResult:
+        """Create a new data source.
+
+        Parameters
+        ----------
+        config : CreateDataSourceTaskConfig
+            Configuration for the Create Data Source task.
+        timeout : float | None
+            Optional timeout in seconds for this request.
+
+        Returns
+        -------
+        CreateDataSourceResult
+            Result containing created data source information.
+        """
+        return await self.run_task(
+            "create_data_source",
             config=config,
             timeout=timeout,
         )

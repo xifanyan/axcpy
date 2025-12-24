@@ -24,6 +24,10 @@ from axcpy.adp.models.export_documents import (
     ExportDocumentsResult,
     ExportDocumentsTaskConfig,
 )
+from axcpy.adp.models.create_data_source import (
+    CreateDataSourceResult,
+    CreateDataSourceTaskConfig,
+)
 
 __all__ = [
     "BaseTaskConfig",
@@ -41,4 +45,6 @@ __all__ = [
     "TaxonomyStatisticTaskConfig",
     "ExportDocumentsResult",
     "ExportDocumentsTaskConfig",
+    "CreateDataSourceResult",
+    "CreateDataSourceTaskConfig",
 ]

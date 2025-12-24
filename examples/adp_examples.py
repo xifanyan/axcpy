@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from axcpy.adp import ADPClient, Session
 from axcpy.adp.models import (
+    CreateDataSourceTaskConfig,
     ExportDocumentsTaskConfig,
     ListEntitiesTaskConfig,
     ManageHostRolesTaskConfig,
@@ -188,6 +189,34 @@ def taxonomy_statistics_example(session: Session):
         print(f"❌ Error: {e}")
 
 
+def create_data_source_example(session: Session):
+    """Example showing Create Data Source task using session.create_data_source() method."""
+    print("\n[*] Example 6: Create Data Source Task")
+
+    try:
+        config = CreateDataSourceTaskConfig(
+            adp_createDataSource_dataSourceName="pyds",
+            adp_createDataSource_engineIdentifier="singleMindServer.demo00001",
+        )
+
+        result = session.create_data_source(config)
+
+        print(f"✅ Data Source Created Successfully")
+        print(f"  - Data Source Name: {result.adp_created_data_source_name}")
+        print(
+            f"  - Data Source Display Name: {result.adp_created_data_source_displayname}"
+        )
+        print(f"  - Host Name: {result.adp_hostname}")
+        print(f"  - Engine: {result.adp_chosen_engine}")
+        print(f"  - Template Used: {result.adp_used_data_source_template}")
+        print(f"  - Host CPU Load: {result.adp_chosen_host_cpu_load}")
+        print(f"  - Host Memory: {result.adp_chosen_host_memory}")
+        print(f"  - Host Memory Ratio: {result.adp_chosen_host_memory_ratio}")
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+
 def main():
     """Main function that creates a shared client and demonstrates its usage."""
     import sys
@@ -225,8 +254,9 @@ def main():
     # manage_host_roles_example(session)
     # read_configuration_example(session)
     # query_engine_example(session)
-    taxonomy_statistics_example(session)
+    # taxonomy_statistics_example(session)
     # export_documents_example(session)
+    create_data_source_example(session)
 
 
 if __name__ == "__main__":

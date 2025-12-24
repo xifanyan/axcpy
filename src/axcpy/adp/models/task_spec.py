@@ -9,6 +9,7 @@ from .query_engine import QueryEngineResult
 from .read_configuration import ConfigurationInfo, ReadConfigurationResult
 from .taxonomy_statistic import TaxonomyStatisticResult, TaxonomyStatisticsOutput
 from .export_documents import ExportDocumentsResult
+from .create_data_source import CreateDataSourceResult
 
 
 class _TaskSpec(TypedDict):
@@ -147,6 +148,23 @@ TASK_SPECS: dict[str, _TaskSpec] = {
                 "adp_exportDocuments_exportFileName"
             ),
             adp_exportDocuments_exportPath=md.get("adp_exportDocuments_exportPath"),
+        ),
+    },
+    "create_data_source": {
+        "task_type": "Create Data Source",
+        "display_name": "Create data source",
+        "description": "Creates a new data source",
+        "parser": lambda md: CreateDataSourceResult(
+            adp_hostname=md.get("adp_hostname"),
+            adp_chosen_host_cpu_load=md.get("adp_chosen_host_cpu_load"),
+            adp_chosen_host_memory_ratio=md.get("adp_chosen_host_memory_ratio"),
+            adp_chosen_host_memory=md.get("adp_chosen_host_memory"),
+            adp_used_data_source_template=md.get("adp_used_data_source_template"),
+            adp_created_data_source_name=md.get("adp_created_data_source_name"),
+            adp_created_data_source_displayname=md.get(
+                "adp_created_data_source_displayname"
+            ),
+            adp_chosen_engine=md.get("adp_chosen_engine"),
         ),
     },
 }
