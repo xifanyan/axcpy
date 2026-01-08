@@ -5,54 +5,128 @@ Python client library and CLI for OpenText Axcelerate eDiscovery service.
 ## Features
 
 - **ADP Client**: Full-featured REST client for Axcelerate ADP service
-- **SearchWebAPI Client**: Auto-generated client from OpenAPI specification
-- **CLI Interface**: Command-line tool for both services
-- **Type Safe**: Full type hints and Pydantic models
-- **Async Support**: Built on httpx for async operations
+  - Sync and async support with `ADPClient` and `AsyncADPClient`
+  - Session-based task execution with `Session` and `AsyncSession`
+  - 7+ task types: List Entities, Manage Host Roles, Query Engine, Read Configuration, Taxonomy Statistics, Create Data Source, Export Documents
+  - Type-safe Pydantic models for request and response validation
+- **SearchWebAPI Client**: Auto-generated Kiota client from OpenAPI specification
+  - Full CRUD operations for collections, projects, fields, searches, and more
+  - Session authentication and transaction management
+  - Type-safe models for all API operations
+- **CLI Interface**: Command-line tool for both services (in development)
+- **Type Safe**: Comprehensive type hints throughout
+- **Modern Stack**: Built on httpx, Pydantic v2, and Typer
 
 ## Installation
 
 ```bash
+# Core package (ADP client only)
 pip install axcpy
+
+# With SearchWebAPI support
+pip install axcpy[searchwebapi]
+
+# With API service (future)
+pip install axcpy[api]
+
+# For development
+pip install axcpy[dev]
 ```
 
 ## Quick Start
 
-### Python API
+### ADP Client (Sync)
 
 ```python
-from axcpy.adp import ADPClient
+from axcpy.adp import ADPClient, Session
+from axcpy.adp.models import ListEntitiesTaskConfig
 
 # Initialize client
 client = ADPClient(
-    base_url="https://axcelerate.example.com/adp",
-    api_key="your-api-key"
+    base_url="https://axcelerate.example.com:8443",
+    ignore_tls=True,
+    timeout=30.0
 )
 
-# Get case information
-case = await client.cases.get(case_id=123)
+# Create session and execute task
+session = Session(
+    client=client,
+    auth_username="your-username",
+    auth_password="your-password"
+)
+
+config = ListEntitiesTaskConfig(adp_listEntities_type="singleMindServer")
+result = session.list_entities(config)
+for entity in result.adp_entities_json_output:
+    print(f"Entity: {entity['id']}")
 ```
 
-### CLI
+### ADP Client (Async)
 
-```bash
-# Configure
-axcpy config set --adp-url https://axcelerate.example.com/adp
-axcpy config set --api-key your-api-key
+```python
+import asyncio
+from axcpy.adp import AsyncADPClient, AsyncSession
+from axcpy.adp.models import QueryEngineTaskConfig
 
-# List cases
-axcpy adp cases list
+async def main():
+    # Initialize async client
+    client = AsyncADPClient(
+        base_url="https://axcelerate.example.com:8443",
+        ignore_tls=True
+    )
+    
+    # Create async session and execute task
+    session = AsyncSession(
+        client=client,
+        auth_username="your-username",
+        auth_password="your-password"
+    )
+    
+    config = QueryEngineTaskConfig(
+        adp_queryEngine_applicationIdentifier="documentHold.demo00001"
+    )
+    result = await session.query_engine(config)
+    print(f"Document count: {result.adp_query_engine_documents_count}")
 
-# Search documents
-axcpy adp docs search "contract AND parties:acme"
+asyncio.run(main())
 ```
+
+### SearchWebAPI Client
+
+```python
+from axcpy.searchwebapi import SearchWebApiClient
+
+# Initialize client
+client = SearchWebApiClient(
+    base_url="https://axcelerate.example.com",
+    ignore_tls=True
+)
+
+# Login and get session
+await client.login.post(username="your-username", password="your-password")
+
+# List collections
+collections = await client.collections.get()
+print(f"Found {len(collections.collections)} collections")
+
+# Don't forget to logout
+await client.logout.post()
+```
+
+## Examples
+
+Check out the [examples/](examples/) directory for complete working examples:
+
+- [adp_examples.py](examples/adp_examples.py) - Synchronous ADP client usage
+- [adp_async_examples.py](examples/adp_async_examples.py) - Asynchronous ADP client usage
+- [searchWebApi_examples.py](examples/searchWebApi_examples.py) - SearchWebAPI client usage
 
 ## Development
 
 This project uses [uv](https://github.com/astral-sh/uv) for fast dependency management.
 
 ```bash
-# Install uv
+# Install uv (if not already installed)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Setup development environment
@@ -61,13 +135,45 @@ uv sync --all-extras
 # Run tests
 uv run pytest
 
-# Run CLI
+# Run specific test file
+uv run pytest tests/test_adp/test_client.py
+
+# Run CLI (in development)
 uv run axcpy --help
+
+# Run examples
+uv run python examples/adp_examples.py
+uv run python examples/adp_async_examples.py
+```
+
+## Project Structure
+
+```
+axcpy/
+├── src/axcpy/
+│   ├── adp/              # ADP client library
+│   │   ├── models/       # Pydantic models for tasks
+│   │   └── services/     # Client and session implementations
+│   ├── searchwebapi/     # SearchWebAPI client (Kiota-generated)
+│   │   └── generated/    # Auto-generated client code
+│   ├── cli/              # Command-line interface (in development)
+│   └── api/              # FastAPI service (planned)
+├── examples/             # Working examples
+├── tests/                # Test suite
+└── docs/                 # Documentation
 ```
 
 ## Documentation
 
-See [DESIGN.md](DESIGN.md) for architecture and design details.
+- [DESIGN.md](DESIGN.md) - Comprehensive architecture and design documentation
+- [examples/](examples/) - Practical usage examples
+- API Reference - Coming soon
+
+## Requirements
+
+- Python 3.12+ (recommended) or 3.9+
+- Dependencies: httpx, pydantic, typer, rich
+- Optional: Microsoft Kiota dependencies for SearchWebAPI
 
 ## License
 

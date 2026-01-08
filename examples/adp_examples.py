@@ -250,13 +250,13 @@ def main():
     print("[*] This same session will be reused for all task examples")
 
     # Pass the session to all example functions
-    # list_entities_example(session)
-    # manage_host_roles_example(session)
-    # read_configuration_example(session)
-    # query_engine_example(session)
-    # taxonomy_statistics_example(session)
+    list_entities_example(session)
+    manage_host_roles_example(session)
+    read_configuration_example(session)
+    query_engine_example(session)
+    taxonomy_statistics_example(session)
     # export_documents_example(session)
-    create_data_source_example(session)
+    # create_data_source_example(session)
 
 
 if __name__ == "__main__":
