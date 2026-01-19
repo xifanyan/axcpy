@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 import asyncio
 import httpx
 from kiota_abstractions.authentication import AnonymousAuthenticationProvider
+from kiota_abstractions.base_request_configuration import RequestConfiguration
 from kiota_abstractions.serialization import ParseNodeFactoryRegistry
 from kiota_serialization_json.json_parse_node_factory import JsonParseNodeFactory
 from kiota_serialization_text.text_parse_node_factory import TextParseNodeFactory
@@ -231,8 +232,94 @@ async def test_api():
             print(f"❌ Failed to get fields: {type(e).__name__}")
             print(f"   Details: {e}")
 
-        # Test 4: Logout
-        print("\n[TEST 5] Testing logout endpoint...")
+        # Test 5: Search for documents with specific fields
+        print("\n[TEST 5] Testing search endpoint with field retrieval...")
+        print("  → Searching for documents in singleMindServer.demo00001/default...")
+        try:
+            import json
+            from axcpy.searchwebapi.generated.projects.item.collections.item.records.records_request_builder import (
+                RecordsRequestBuilder,
+            )
+
+            # Request specific fields to be returned with the search results
+            fields_to_retrieve = [
+                "rm_numeric_identifier",  # Document ID
+                "rm_subject",  # Subject
+                "meta_title",  # Title
+                "rm_filename",  # File Name
+                "rm_source",  # Data Source
+                "rm_custodian",  # Custodian
+                "rm_fileextension",  # File Extension
+                "rm_filesize",  # File Size
+                "rm_creationdate",  # Creation Date
+                "rm_sentdate",  # Sent Date
+                "meta_from",  # Sender
+                "meta_to",  # Recipients
+            ]
+
+            search_results = (
+                await client.projects.by_project_id("singleMindServer.demo00001")
+                .collections.by_collection_id("default")
+                .records.get(
+                    RequestConfiguration(
+                        query_parameters=RecordsRequestBuilder.RecordsRequestBuilderGetQueryParameters(
+                            query="*",
+                            limit=3,
+                            page=1,
+                            fields=",".join(
+                                fields_to_retrieve
+                            ),  # Specify fields to retrieve
+                        )
+                    )
+                )
+            )
+            print("✅ Search successful!")
+
+            # Parse and display the results
+            if isinstance(search_results, bytes):
+                results_json = json.loads(search_results.decode("utf-8"))
+                print(f"   Total results: {results_json.get('numberResults', 'N/A')}")
+
+                if "results" in results_json:
+                    for idx, record in enumerate(results_json["results"], 1):
+                        print(f"\n   Document {idx}:")
+                        print(f"      Record ID: {record.get('id', 'N/A')}")
+                        print(f"      Unique Field: {record.get('uniqueField', 'N/A')}")
+
+                        # The 'fields' array contains the requested field values
+                        if "fields" in record and record["fields"]:
+                            print(
+                                f"      Fields retrieved: {len(record['fields'])} fields"
+                            )
+                            for field in record["fields"]:
+                                field_id = field.get("id", "unknown")
+                                field_value = field.get("value", "")
+                                # Truncate long values for display
+                                display_value = (
+                                    str(field_value)[:100] + "..."
+                                    if len(str(field_value)) > 100
+                                    else field_value
+                                )
+                                print(f"         {field_id}: {display_value}")
+                        else:
+                            print(f"      No fields returned")
+                            print(f"      Available keys: {list(record.keys())}")
+                else:
+                    print(
+                        f"   No 'results' key found. Available keys: {results_json.keys()}"
+                    )
+                    print(
+                        f"   Full response: {json.dumps(results_json, indent=3)[:1000]}..."
+                    )
+        except Exception as e:
+            print(f"❌ Search failed: {type(e).__name__}")
+            print(f"   Details: {e}")
+            import traceback
+
+            traceback.print_exc()
+
+        # Test 99: Logout
+        print("\n[TEST 99] Testing logout endpoint...")
         try:
             logout_response = (
                 await client.logout.delete()
