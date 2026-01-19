@@ -27,6 +27,10 @@ from axcpy.adp.models.read_configuration import (
     ReadConfigurationResult,
     ReadConfigurationTaskConfig,
 )
+from axcpy.adp.models.read_service_alerts import (
+    ReadServiceAlertsResult,
+    ReadServiceAlertsTaskConfig,
+)
 from axcpy.adp.models.request import ADPTaskRequest
 from axcpy.adp.models.task_spec import TASK_SPECS  # type: ignore
 from axcpy.adp.models.taxonomy_statistic import (
@@ -256,6 +260,32 @@ class Session:
         """
         return self.run_task(
             "manage_users_and_groups",
+            config=config,
+            timeout=timeout,
+        )
+
+    def read_service_alerts(
+        self,
+        config: ReadServiceAlertsTaskConfig,
+        *,
+        timeout: float | None = None,
+    ) -> ReadServiceAlertsResult:
+        """Read service alerts from the system.
+
+        Parameters
+        ----------
+        config : ReadServiceAlertsTaskConfig
+            Configuration for the Read Service Alerts task.
+        timeout : float | None
+            Optional timeout in seconds for this request.
+
+        Returns
+        -------
+        ReadServiceAlertsResult
+            Result containing service alert information.
+        """
+        return self.run_task(
+            "read_service_alerts",
             config=config,
             timeout=timeout,
         )

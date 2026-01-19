@@ -24,6 +24,7 @@ from axcpy.adp.models import (
     ManageUsersAndGroupsTaskConfig,
     QueryEngineTaskConfig,
     ReadConfigurationTaskConfig,
+    ReadServiceAlertsTaskConfig,
     TaxonomyStatisticTaskConfig,
 )
 from axcpy.adp.models.manage_users_and_groups import (
@@ -99,9 +100,7 @@ def read_configuration_example(session: Session):
             config_info,
         ) in result.adp_readConfiguration_json_output.items():
             print(f"  - Configuration: {config_name}")
-            print(
-                f"    Global Parameters: {len(config_info.Global.Static.Parameters)} items"
-            )
+            print(f"    Global Parameters: {len(config_info.Global.Static.Parameters)} items")
             print(f"    Dynamic Components: {len(config_info.DynamicComponents)} items")
 
             # Show first few parameters if they exist
@@ -210,9 +209,7 @@ def create_data_source_example(session: Session):
 
         print("✅ Data Source Created Successfully")
         print(f"  - Data Source Name: {result.adp_created_data_source_name}")
-        print(
-            f"  - Data Source Display Name: {result.adp_created_data_source_displayname}"
-        )
+        print(f"  - Data Source Display Name: {result.adp_created_data_source_displayname}")
         print(f"  - Host Name: {result.adp_hostname}")
         print(f"  - Engine: {result.adp_chosen_engine}")
         print(f"  - Template Used: {result.adp_used_data_source_template}")
@@ -331,17 +328,13 @@ def manage_users_and_groups_example(session: Session) -> None:
                 print(f"     - Group: {group_data.Name}")
                 print(f"       Display Name: {group_data.DisplayName}")
                 if group_data.Users:
-                    print(
-                        f"       Users ({len(group_data.Users)}): {', '.join(group_data.Users)}"
-                    )
+                    print(f"       Users ({len(group_data.Users)}): {', '.join(group_data.Users)}")
                 if group_data.Description:
                     print(f"       Description: {group_data.Description}")
 
         # Display users
         if result.adp_manageUsersAndGroups_json_output.Users:
-            print(
-                f"\n  [+] Users found: {len(result.adp_manageUsersAndGroups_json_output.Users)}"
-            )
+            print(f"\n  [+] Users found: {len(result.adp_manageUsersAndGroups_json_output.Users)}")
             for (
                 user_id,
                 user_data,
@@ -365,13 +358,34 @@ def manage_users_and_groups_example(session: Session) -> None:
                 for group_id, group_data in review_team_groups:
                     print("     - Review Team Users:")
                     for username in group_data.Users:
-                        user_data = (
-                            result.adp_manageUsersAndGroups_json_output.Users.get(
-                                username
-                            )
-                        )
+                        user_data = result.adp_manageUsersAndGroups_json_output.Users.get(username)
                         if user_data:
                             print(f"       - {user_data.DisplayName} ({username})")
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+
+def read_service_alerts_example(session: Session):
+    """Example showing Read Service Alerts task using session.read_service_alerts() method."""
+    print("\n[*] Example 8: Read Service Alerts Task")
+
+    try:
+        config = ReadServiceAlertsTaskConfig(
+            adp_readServiceAlerts_maximum="10",
+        )
+        result = session.read_service_alerts(config)
+
+        print(f"Found {len(result.adp_readServiceAlerts_json_output)} alerts")
+
+        for alert in result.adp_readServiceAlerts_json_output:
+            print(
+                f"  - ID: {alert.id}, Severity: {alert.severity}, Message: {alert.message[:50]}..."
+            )
+            if alert.host_name:
+                print(f"    Host: {alert.host_name}")
+            if alert.report_on:
+                print(f"    Reported: {alert.report_on}")
 
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -403,9 +417,7 @@ def main():
     print(f"[+] Created shared client with ID: {id(shared_client)}")
 
     # Create a single session object that will be reused for all examples
-    session = Session(
-        client=shared_client, auth_username=ADPUSERNAME, auth_password=ADPPASSWORD
-    )
+    session = Session(client=shared_client, auth_username=ADPUSERNAME, auth_password=ADPPASSWORD)
     print(f"[+] Created shared session with username: {session.auth_username}")
     print("[*] This same session will be reused for all task examples")
 
@@ -418,6 +430,7 @@ def main():
     # export_documents_example(session)
     # create_data_source_example(session)
     manage_users_and_groups_example(session)
+    read_service_alerts_example(session)
 
 
 if __name__ == "__main__":

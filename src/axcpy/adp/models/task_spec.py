@@ -14,6 +14,7 @@ from .manage_users_and_groups import (
 )
 from .query_engine import QueryEngineResult
 from .read_configuration import ConfigurationInfo, ReadConfigurationResult
+from .read_service_alerts import ReadServiceAlertsResult, ServiceAlert
 from .taxonomy_statistic import TaxonomyStatisticResult, TaxonomyStatisticsOutput
 
 
@@ -177,6 +178,21 @@ TASK_SPECS: dict[str, _TaskSpec] = {
                     else md.get("adp_manageUsersAndGroups_json_output", {})
                 )
             ),
+        ),
+    },
+    "read_service_alerts": {
+        "task_type": "Read Service Alerts",
+        "display_name": "Read service alerts",
+        "description": "Reads service alerts from the system",
+        "parser": lambda md: ReadServiceAlertsResult(
+            adp_readServiceAlerts_json_output=[
+                ServiceAlert(**alert)
+                for alert in (
+                    json.loads(md.get("adp_readServiceAlerts_json_output", "[]"))
+                    if isinstance(md.get("adp_readServiceAlerts_json_output"), str)
+                    else md.get("adp_readServiceAlerts_json_output", [])
+                )
+            ],
         ),
     },
 }

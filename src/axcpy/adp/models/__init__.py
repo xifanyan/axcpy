@@ -26,6 +26,11 @@ from axcpy.adp.models.read_configuration import (
     ReadConfigurationResult,
     ReadConfigurationTaskConfig,
 )
+from axcpy.adp.models.read_service_alerts import (
+    ReadServiceAlertsResult,
+    ReadServiceAlertsTaskConfig,
+    ServiceAlert,
+)
 from axcpy.adp.models.request import ADPTaskRequest
 from axcpy.adp.models.response import ADPTaskResponse
 from axcpy.adp.models.taxonomy_statistic import (
@@ -45,6 +50,9 @@ __all__ = [
     "QueryEngineTaskConfig",
     "ReadConfigurationResult",
     "ReadConfigurationTaskConfig",
+    "ReadServiceAlertsResult",
+    "ReadServiceAlertsTaskConfig",
+    "ServiceAlert",
     "TaxonomyStatisticResult",
     "TaxonomyStatisticTaskConfig",
     "ExportDocumentsResult",
