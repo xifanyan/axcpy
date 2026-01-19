@@ -1,34 +1,40 @@
 from __future__ import annotations
 
-from typing import Any
 import logging
+from typing import Any
 
+from axcpy.adp.models.create_data_source import (
+    CreateDataSourceResult,
+    CreateDataSourceTaskConfig,
+)
+from axcpy.adp.models.export_documents import (
+    ExportDocumentsResult,
+    ExportDocumentsTaskConfig,
+)
+
+# ruff: noqa: N802 - Method name must match API specification
 from axcpy.adp.models.list_entities import ListEntitiesResult, ListEntitiesTaskConfig
 from axcpy.adp.models.manage_host_roles import (
     ManageHostRolesResult,
     ManageHostRolesTaskConfig,
+)
+from axcpy.adp.models.manage_users_and_groups import (
+    ManageUsersAndGroupsResult,
+    ManageUsersAndGroupsTaskConfig,
 )
 from axcpy.adp.models.query_engine import QueryEngineResult, QueryEngineTaskConfig
 from axcpy.adp.models.read_configuration import (
     ReadConfigurationResult,
     ReadConfigurationTaskConfig,
 )
+from axcpy.adp.models.request import ADPTaskRequest
+from axcpy.adp.models.task_spec import TASK_SPECS  # type: ignore
 from axcpy.adp.models.taxonomy_statistic import (
     TaxonomyStatisticResult,
     TaxonomyStatisticTaskConfig,
 )
-from axcpy.adp.models.export_documents import (
-    ExportDocumentsResult,
-    ExportDocumentsTaskConfig,
-)
-from axcpy.adp.models.create_data_source import (
-    CreateDataSourceResult,
-    CreateDataSourceTaskConfig,
-)
-from axcpy.adp.models.request import ADPTaskRequest
 
 from .client import ADPClient
-from axcpy.adp.models.task_spec import TASK_SPECS  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -228,6 +234,35 @@ class Session:
             timeout=timeout,
         )
 
+    def manage_users_and_groups(
+        self,
+        config: ManageUsersAndGroupsTaskConfig,
+        *,
+        timeout: float | None = None,
+    ) -> ManageUsersAndGroupsResult:
+        """Manage users, groups, and their roles.
+
+        Parameters
+        ----------
+        config : ManageUsersAndGroupsTaskConfig
+            Configuration for the Manage Users and Groups task.
+        timeout : float | None
+            Optional timeout in seconds for this request.
+
+        Returns
+        -------
+        ManageUsersAndGroupsResult
+            Result containing users, groups, and role information.
+        """
+        return self.run_task(
+            "manage_users_and_groups",
+            config=config,
+            timeout=timeout,
+        )
+
+    # --------------------------------------------------------------
+
+    # Generic task execution via registry (spec definitions in task_spec.py)
     # --------------------------------------------------------------
     # Generic task execution via registry (spec definitions in task_spec.py)
     # --------------------------------------------------------------
@@ -260,9 +295,7 @@ class Session:
             field_defaults: dict[str, Any] = {}
             try:
                 # model_fields mapping: name -> FieldInfo
-                for fname, finfo in getattr(
-                    config.__class__, "model_fields", {}
-                ).items():
+                for fname, finfo in getattr(config.__class__, "model_fields", {}).items():
                     if finfo.default is not None:
                         field_defaults[fname] = finfo.default
             except Exception:  # pragma: no cover - defensive
@@ -274,7 +307,7 @@ class Session:
                     # If attribute not present we skip silently
                     continue
                 default_val = field_defaults.get(attr, None)
-                # Override only when unchanged (either equal to default or default_val is None and current is None)
+                # Override only when unchanged (equal to default or both are None)
                 if (default_val is not None and current == default_val) or (
                     default_val is None and current is None
                 ):
@@ -302,9 +335,7 @@ class Session:
             )
         metadata = response.get("executionMetaData", {})
         if not metadata:
-            raise RuntimeError(
-                f"{spec['task_type']} task completed but returned no metadata"
-            )
+            raise RuntimeError(f"{spec['task_type']} task completed but returned no metadata")
         try:
             return spec["parser"](metadata)
         except Exception as e:  # pragma: no cover - defensive

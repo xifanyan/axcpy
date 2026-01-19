@@ -1,15 +1,20 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Callable, TypedDict, NotRequired
+from collections.abc import Callable
+from typing import Any, NotRequired, TypedDict
 
+from .create_data_source import CreateDataSourceResult
+from .export_documents import ExportDocumentsResult
 from .list_entities import ListEntitiesResult
 from .manage_host_roles import ManageHostRolesResult
+from .manage_users_and_groups import (
+    ManageUsersAndGroupsResult,
+    UsersAndGroups,
+)
 from .query_engine import QueryEngineResult
 from .read_configuration import ConfigurationInfo, ReadConfigurationResult
 from .taxonomy_statistic import TaxonomyStatisticResult, TaxonomyStatisticsOutput
-from .export_documents import ExportDocumentsResult
-from .create_data_source import CreateDataSourceResult
 
 
 class _TaskSpec(TypedDict):
@@ -59,9 +64,7 @@ TASK_SPECS: dict[str, _TaskSpec] = {
         "display_name": "Manage Host Roles",
         "description": "Manage roles for hosts",
         "parser": lambda md: ManageHostRolesResult(
-            adp_manageHostRoles_output_file_name=md.get(
-                "adp_manageHostRoles_output_file_name", ""
-            ),
+            adp_manageHostRoles_output_file_name=md.get("adp_manageHostRoles_output_file_name", ""),
             adp_manageHostRoles_json_output=(
                 json.loads(md.get("adp_manageHostRoles_json_output", "{}"))
                 if isinstance(md.get("adp_manageHostRoles_json_output"), str)
@@ -74,7 +77,7 @@ TASK_SPECS: dict[str, _TaskSpec] = {
         "display_name": "Read Configuration",
         "description": "A Task to read configurations into JSON or XML.",
         "defaults": {
-            # default value for those 2 output fields probably got copied from another task; adjust to match task name
+            # Default values adjusted to match task name
             "adp_readConfiguration_outputJson": "adp_readConfiguration_json_output",
             "adp_readConfiguration_outputFilename": "adp_readConfiguration_output_file_name",
         },
@@ -99,9 +102,7 @@ TASK_SPECS: dict[str, _TaskSpec] = {
         "display_name": "Query engine",
         "description": "Queries an engine",
         "parser": lambda md: QueryEngineResult(
-            adp_query_engine_aggregated_value=md.get(
-                "adp_query_engine_aggregated_value"
-            ),
+            adp_query_engine_aggregated_value=md.get("adp_query_engine_aggregated_value"),
             adp_query_engine_documents_count=(
                 int(md.get("adp_query_engine_documents_count", 0))
                 if md.get("adp_query_engine_documents_count") is not None
@@ -124,9 +125,7 @@ TASK_SPECS: dict[str, _TaskSpec] = {
                 if md.get("adp_taxonomy_statistics_json_output")
                 and isinstance(md.get("adp_taxonomy_statistics_json_output"), str)
                 else (
-                    TaxonomyStatisticsOutput(
-                        **md.get("adp_taxonomy_statistics_json_output")
-                    )
+                    TaxonomyStatisticsOutput(**md.get("adp_taxonomy_statistics_json_output"))
                     if md.get("adp_taxonomy_statistics_json_output")
                     and isinstance(md.get("adp_taxonomy_statistics_json_output"), dict)
                     else None
@@ -144,9 +143,7 @@ TASK_SPECS: dict[str, _TaskSpec] = {
                 if md.get("adp_exportDocuments_searchResultSize") is not None
                 else None
             ),
-            adp_exportDocuments_exportFileName=md.get(
-                "adp_exportDocuments_exportFileName"
-            ),
+            adp_exportDocuments_exportFileName=md.get("adp_exportDocuments_exportFileName"),
             adp_exportDocuments_exportPath=md.get("adp_exportDocuments_exportPath"),
         ),
     },
@@ -161,10 +158,25 @@ TASK_SPECS: dict[str, _TaskSpec] = {
             adp_chosen_host_memory=md.get("adp_chosen_host_memory"),
             adp_used_data_source_template=md.get("adp_used_data_source_template"),
             adp_created_data_source_name=md.get("adp_created_data_source_name"),
-            adp_created_data_source_displayname=md.get(
-                "adp_created_data_source_displayname"
-            ),
+            adp_created_data_source_displayname=md.get("adp_created_data_source_displayname"),
             adp_chosen_engine=md.get("adp_chosen_engine"),
+        ),
+    },
+    "manage_users_and_groups": {
+        "task_type": "Manage Users and Groups",
+        "display_name": "Manage users and groups",
+        "description": "Manages users, groups, and their roles",
+        "parser": lambda md: ManageUsersAndGroupsResult(
+            adp_manageUsersAndGroups_output_file_name=md.get(
+                "adp_manageUsersAndGroups_output_file_name", ""
+            ),
+            adp_manageUsersAndGroups_json_output=UsersAndGroups(
+                **(
+                    json.loads(md.get("adp_manageUsersAndGroups_json_output", "{}"))
+                    if isinstance(md.get("adp_manageUsersAndGroups_json_output"), str)
+                    else md.get("adp_manageUsersAndGroups_json_output", {})
+                )
+            ),
         ),
     },
 }

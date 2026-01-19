@@ -1,34 +1,40 @@
 from __future__ import annotations
 
-from typing import Any
 import logging
+from typing import Any
 
+from axcpy.adp.models.create_data_source import (
+    CreateDataSourceResult,
+    CreateDataSourceTaskConfig,
+)
+from axcpy.adp.models.export_documents import (
+    ExportDocumentsResult,
+    ExportDocumentsTaskConfig,
+)
+
+# ruff: noqa: N802 - Method name must match API specification
 from axcpy.adp.models.list_entities import ListEntitiesResult, ListEntitiesTaskConfig
 from axcpy.adp.models.manage_host_roles import (
     ManageHostRolesResult,
     ManageHostRolesTaskConfig,
+)
+from axcpy.adp.models.manage_users_and_groups import (
+    ManageUsersAndGroupsResult,
+    ManageUsersAndGroupsTaskConfig,
 )
 from axcpy.adp.models.query_engine import QueryEngineResult, QueryEngineTaskConfig
 from axcpy.adp.models.read_configuration import (
     ReadConfigurationResult,
     ReadConfigurationTaskConfig,
 )
+from axcpy.adp.models.request import ADPTaskRequest
+from axcpy.adp.models.task_spec import TASK_SPECS  # type: ignore
 from axcpy.adp.models.taxonomy_statistic import (
     TaxonomyStatisticResult,
     TaxonomyStatisticTaskConfig,
 )
-from axcpy.adp.models.export_documents import (
-    ExportDocumentsResult,
-    ExportDocumentsTaskConfig,
-)
-from axcpy.adp.models.create_data_source import (
-    CreateDataSourceResult,
-    CreateDataSourceTaskConfig,
-)
-from axcpy.adp.models.request import ADPTaskRequest
 
 from .async_client import AsyncADPClient
-from axcpy.adp.models.task_spec import TASK_SPECS  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -127,12 +133,10 @@ class AsyncSession:
         Returns response JSON (dict) or None if no JSON body.
         """
         merged = {**self._base_headers, **(headers or {})}
-        response = await self._client.statusAndProgress(
-            task, headers=merged, timeout=timeout
-        )
+        response = await self._client.statusAndProgress(task, headers=merged, timeout=timeout)
         return self._process_response(response)
 
-    async def __aenter__(self) -> "AsyncSession":  # pragma: no cover
+    async def __aenter__(self) -> AsyncSession:  # pragma: no cover
         return self
 
     async def __aexit__(self, exc_type, exc, tb) -> None:  # pragma: no cover
@@ -238,8 +242,32 @@ class AsyncSession:
             timeout=timeout,
         )
 
-    # --------------------------------------------------------------
-    # Generic task execution via registry (spec definitions in task_spec.py)
+    async def manage_users_and_groups(
+        self,
+        config: ManageUsersAndGroupsTaskConfig,
+        *,
+        timeout: float | None = None,
+    ) -> ManageUsersAndGroupsResult:
+        """Manage users, groups, and their roles.
+
+        Parameters
+        ----------
+        config : ManageUsersAndGroupsTaskConfig
+            Configuration for the Manage Users and Groups task.
+        timeout : float | None
+            Optional timeout in seconds for this request.
+
+        Returns
+        -------
+        ManageUsersAndGroupsResult
+            Result containing users, groups, and role information.
+        """
+        return await self.run_task(
+            "manage_users_and_groups",
+            config=config,
+            timeout=timeout,
+        )
+
     # --------------------------------------------------------------
 
     async def run_task(
@@ -285,9 +313,7 @@ class AsyncSession:
             )
         metadata = response.get("executionMetaData", {})
         if not metadata:
-            raise RuntimeError(
-                f"{spec['task_type']} task completed but returned no metadata"
-            )
+            raise RuntimeError(f"{spec['task_type']} task completed but returned no metadata")
         try:
             return spec["parser"](metadata)
         except Exception as e:  # pragma: no cover - defensive

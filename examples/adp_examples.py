@@ -8,9 +8,9 @@ multiple Session instances with different task types.
 Run with: python demo.py
 """
 
+import logging
 import sys
 from pathlib import Path
-import logging
 
 # Add src to path for local development
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -21,9 +21,16 @@ from axcpy.adp.models import (
     ExportDocumentsTaskConfig,
     ListEntitiesTaskConfig,
     ManageHostRolesTaskConfig,
+    ManageUsersAndGroupsTaskConfig,
     QueryEngineTaskConfig,
     ReadConfigurationTaskConfig,
     TaxonomyStatisticTaskConfig,
+)
+from axcpy.adp.models.manage_users_and_groups import (
+    ApplicationRoles,
+    GroupDefinition,
+    UserDefinition,
+    UserToGroup,
 )
 from axcpy.adp.models.read_configuration import ConfigToReadArg
 from axcpy.adp.models.taxonomy_statistic import OutputTaxonomy
@@ -134,7 +141,7 @@ def query_engine_example(session: Session):
         )
         result = session.query_engine(config)
 
-        print(f"Query Results:")
+        print("Query Results:")
         print(f"  - Document Count: {result.adp_query_engine_documents_count}")
         print(f"  - Aggregated Value: {result.adp_query_engine_aggregated_value}")
 
@@ -165,7 +172,7 @@ def taxonomy_statistics_example(session: Session):
 
         result = session.taxonomy_statistic(config)
 
-        print(f"Taxonomy Statistics:")
+        print("Taxonomy Statistics:")
 
         if result.adp_taxonomy_statistics_json_output:
             stats = result.adp_taxonomy_statistics_json_output
@@ -201,7 +208,7 @@ def create_data_source_example(session: Session):
 
         result = session.create_data_source(config)
 
-        print(f"✅ Data Source Created Successfully")
+        print("✅ Data Source Created Successfully")
         print(f"  - Data Source Name: {result.adp_created_data_source_name}")
         print(
             f"  - Data Source Display Name: {result.adp_created_data_source_displayname}"
@@ -212,6 +219,159 @@ def create_data_source_example(session: Session):
         print(f"  - Host CPU Load: {result.adp_chosen_host_cpu_load}")
         print(f"  - Host Memory: {result.adp_chosen_host_memory}")
         print(f"  - Host Memory Ratio: {result.adp_chosen_host_memory_ratio}")
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+
+def manage_users_and_groups_example(session: Session) -> None:
+    """Example showing Manage Users and Groups task."""
+    print("\n[*] Example 7: Manage Users and Groups Task")
+
+    try:
+        # Define users to create or modify
+        users_to_manage = [
+            UserDefinition(
+                Enabled=True,
+                ExternalUser=False,
+                Password="SecurePassword123!",
+                Remove=False,
+                UserName="new.user@example.com",
+            ),
+            UserDefinition(
+                Enabled=True,
+                ExternalUser=True,
+                Password="",
+                Remove=False,
+                UserName="external.user@company.com",
+            ),
+        ]
+
+        # Define groups to create or modify
+        groups_to_manage = [
+            GroupDefinition(
+                Enabled=True,
+                GroupName="ReviewTeam",
+                Remove=False,
+            ),
+            GroupDefinition(
+                Enabled=True,
+                GroupName="AdminTeam",
+                Remove=False,
+            ),
+        ]
+
+        # Assign users to groups
+        user_group_assignments = [
+            UserToGroup(
+                Enabled=True,
+                GroupName="ReviewTeam",
+                Remove=False,
+                UserName="new.user@example.com",
+            ),
+            UserToGroup(
+                Enabled=True,
+                GroupName="AdminTeam",
+                Remove=False,
+                UserName="new.user@example.com",
+            ),
+        ]
+
+        # Define application roles for users/groups
+        app_roles = [
+            ApplicationRoles(
+                GroupOrUserName="new.user@example.com",
+                Enabled=True,
+                ApplicationIdentifier="documentHold",
+                Roles="reviewer,editor",
+            ),
+            ApplicationRoles(
+                GroupOrUserName="AdminTeam",
+                Enabled=True,
+                ApplicationIdentifier="documentHold",
+                Roles="admin",
+            ),
+        ]
+
+        # Create configuration
+        config = ManageUsersAndGroupsTaskConfig(
+            adp_manageUsersAndGroups_userDefinition=[
+                user.model_dump(by_alias=True) for user in users_to_manage
+            ],
+            adp_manageUsersAndGroups_groupDefinition=[
+                group.model_dump(by_alias=True) for group in groups_to_manage
+            ],
+            # adp_manageUsersAndGroups_assignmentUserToGroup=[
+            #    assignment.model_dump(by_alias=True) for assignment in user_group_assignments
+            # ],
+            # adp_manageUsersAndGroups_addApplicationRoles=[
+            #    role.model_dump(by_alias=True) for role in app_roles
+            # ],
+            # Optionally filter by application or group
+            # adp_manageUsersAndGroups_AppIdsToFilterFor="documentHold",
+            # adp_manageUsersAndGroups_GroupUserIdsToFilterFor="ReviewTeam",
+        )
+
+        # Execute the task
+        result = session.manage_users_and_groups(config)
+
+        # Display results
+        print("✅ Users and Groups Management Completed")
+        print(f"  - Output file: {result.adp_manageUsersAndGroups_output_file_name}")
+
+        # Display groups
+        if result.adp_manageUsersAndGroups_json_output.Groups:
+            print(
+                f"\n  [+] Groups found: {len(result.adp_manageUsersAndGroups_json_output.Groups)}"
+            )
+            for (
+                group_id,
+                group_data,
+            ) in result.adp_manageUsersAndGroups_json_output.Groups.items():
+                print(f"     - Group: {group_data.Name}")
+                print(f"       Display Name: {group_data.DisplayName}")
+                if group_data.Users:
+                    print(
+                        f"       Users ({len(group_data.Users)}): {', '.join(group_data.Users)}"
+                    )
+                if group_data.Description:
+                    print(f"       Description: {group_data.Description}")
+
+        # Display users
+        if result.adp_manageUsersAndGroups_json_output.Users:
+            print(
+                f"\n  [+] Users found: {len(result.adp_manageUsersAndGroups_json_output.Users)}"
+            )
+            for (
+                user_id,
+                user_data,
+            ) in result.adp_manageUsersAndGroups_json_output.Users.items():
+                print(f"     - User: {user_data.Name}")
+                print(f"       Display Name: {user_data.DisplayName}")
+                print(f"       External: {user_data.External}")
+                if user_data.EmailAddress:
+                    print(f"       Email: {user_data.EmailAddress}")
+
+        # Filter example - Show only users in specific application
+        if result.adp_manageUsersAndGroups_json_output.Groups:
+            print("\n  [*] Filtering Results Example:")
+            # Users in ReviewTeam group
+            review_team_groups = [
+                (k, v)
+                for k, v in result.adp_manageUsersAndGroups_json_output.Groups.items()
+                if "Review" in v.Name
+            ]
+            if review_team_groups:
+                for group_id, group_data in review_team_groups:
+                    print("     - Review Team Users:")
+                    for username in group_data.Users:
+                        user_data = (
+                            result.adp_manageUsersAndGroups_json_output.Users.get(
+                                username
+                            )
+                        )
+                        if user_data:
+                            print(f"       - {user_data.DisplayName} ({username})")
 
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -257,6 +417,7 @@ def main():
     taxonomy_statistics_example(session)
     # export_documents_example(session)
     # create_data_source_example(session)
+    manage_users_and_groups_example(session)
 
 
 if __name__ == "__main__":

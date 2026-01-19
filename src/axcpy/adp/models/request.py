@@ -2,17 +2,21 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from .create_data_source import CreateDataSourceTaskConfig
+from .export_documents import ExportDocumentsTaskConfig
 from .list_entities import ListEntitiesTaskConfig
 from .manage_host_roles import ManageHostRolesTaskConfig
+from .manage_users_and_groups import ManageUsersAndGroupsTaskConfig
 from .query_engine import QueryEngineTaskConfig
 from .read_configuration import ReadConfigurationTaskConfig
 from .taxonomy_statistic import TaxonomyStatisticTaskConfig
-from .export_documents import ExportDocumentsTaskConfig
-from .create_data_source import CreateDataSourceTaskConfig
+
+# ruff: noqa: N815 - Field names must match API specification
 
 TaskConfigurationType = (
     ListEntitiesTaskConfig
     | ManageHostRolesTaskConfig
+    | ManageUsersAndGroupsTaskConfig
     | QueryEngineTaskConfig
     | ReadConfigurationTaskConfig
     | TaxonomyStatisticTaskConfig
