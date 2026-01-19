@@ -20,6 +20,8 @@ class ServiceAlert(BaseModel):
     Maps to the Go ServiceAlert struct.
     """
 
+    model_config = {"populate_by_name": True}
+
     message: str = Field(default="")
     id: str = Field(default="")
     identification: str = Field(default="")
