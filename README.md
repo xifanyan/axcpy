@@ -7,7 +7,7 @@ Python client library and CLI for OpenText Axcelerate eDiscovery service.
 - **ADP Client**: Full-featured REST client for Axcelerate ADP service
   - Sync and async support with `ADPClient` and `AsyncADPClient`
   - Session-based task execution with `Session` and `AsyncSession`
-  - 7+ task types: List Entities, Manage Host Roles, Query Engine, Read Configuration, Taxonomy Statistics, Create Data Source, Export Documents
+  - 10+ task types: List Entities, Manage Host Roles, Query Engine, Read Configuration, Taxonomy Statistics, Create Data Source, Export Documents, Manage Users and Groups, Read Service Alerts, Create OCR Job
   - Type-safe Pydantic models for request and response validation
 - **SearchWebAPI Client**: Auto-generated Kiota client from OpenAPI specification
   - Full CRUD operations for collections, projects, fields, searches, and more
@@ -175,27 +175,22 @@ OpenCode will automatically use the `axcelerate-status` skill to query your AXce
 
 **Quick setup:**
 ```bash
-# Default credentials are pre-configured. Just start OpenCode!
-opencode  # Start OpenCode and ask about entity status!
-
-# Optional: Override with custom credentials
+# Set your credentials via environment variables
 export ADP_USERNAME="your_username"
 export ADP_PASSWORD="your_password"
 export ADP_BASE_URL="https://your-server:8443"
+
+# Start OpenCode and ask about entity status
+opencode
 ```
 
-**Default Environment:**
-- Server: `https://vm-rhauswirth2.otxlab.net:8443`
-- Username: `adpuser`
-- Password: `adpus3r`
-
-See [.opencode/skills/axcelerate-status/QUICKSTART.md](.opencode/skills/axcelerate-status/QUICKSTART.md) for more details.
+See the skill documentation for more details on available commands and usage.
 
 ## Documentation
 
+- [Documentation](docs/) - Complete documentation including Getting Started guide
 - [DESIGN.md](DESIGN.md) - Comprehensive architecture and design documentation
 - [examples/](examples/) - Practical usage examples
-- [.opencode/skills/axcelerate-status/](.opencode/skills/axcelerate-status/) - OpenCode skill for entity status checking
 - API Reference - Coming soon
 
 ## Requirements
