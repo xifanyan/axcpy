@@ -59,22 +59,24 @@ def test_create_ocr_job_config_restrictions() -> None:
 
 
 def test_create_ocr_job_result() -> None:
-    """Test Create OCR Job result model."""
-    result = CreateOcrJobResult(executionId="12345")
+    """Test Create OCR Job result model (deprecated)."""
+    result = CreateOcrJobResult()
 
-    assert result.executionId == "12345"
+    # CreateOcrJobResult is now an empty placeholder class
+    assert isinstance(result, CreateOcrJobResult)
 
 
 def test_create_ocr_job_result_none() -> None:
-    """Test Create OCR Job result with no execution ID."""
+    """Test Create OCR Job result instantiation (deprecated)."""
     result = CreateOcrJobResult()
 
-    assert result.executionId is None
+    assert isinstance(result, CreateOcrJobResult)
 
 
 def test_create_ocr_job_result_from_dict() -> None:
-    """Test Create OCR Job result from dictionary."""
-    data = {"executionId": "67890"}
+    """Test Create OCR Job result from dictionary (deprecated)."""
+    # Extra fields are ignored by Pydantic
+    data = {"executionID": "67890"}
     result = CreateOcrJobResult(**data)
 
-    assert result.executionId == "67890"
+    assert isinstance(result, CreateOcrJobResult)

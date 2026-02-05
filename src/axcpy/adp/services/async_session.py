@@ -7,10 +7,7 @@ from axcpy.adp.models.create_data_source import (
     CreateDataSourceResult,
     CreateDataSourceTaskConfig,
 )
-from axcpy.adp.models.create_ocr_job import (
-    CreateOcrJobResult,
-    CreateOcrJobTaskConfig,
-)
+from axcpy.adp.models.create_ocr_job import CreateOcrJobTaskConfig
 from axcpy.adp.models.export_documents import (
     ExportDocumentsResult,
     ExportDocumentsTaskConfig,
@@ -32,6 +29,7 @@ from axcpy.adp.models.read_configuration import (
     ReadConfigurationTaskConfig,
 )
 from axcpy.adp.models.request import ADPTaskRequest
+from axcpy.adp.models.response import ADPTaskResponse
 from axcpy.adp.models.task_spec import TASK_SPECS  # type: ignore
 from axcpy.adp.models.taxonomy_statistic import (
     TaxonomyStatisticResult,
@@ -277,11 +275,11 @@ class AsyncSession:
         config: CreateOcrJobTaskConfig,
         *,
         timeout: float | None = None,
-    ) -> CreateOcrJobResult:
+    ) -> str:
         """Create an OCR job to process documents (async).
 
-        This task creates an OCR job asynchronously and returns the execution ID.
-        Use statusAndProgress() to monitor job completion.
+        This task is executed asynchronously and returns immediately.
+        Use statusAndProgress() with the returned execution ID to monitor job completion.
 
         Parameters
         ----------
@@ -292,14 +290,31 @@ class AsyncSession:
 
         Returns
         -------
-        CreateOcrJobResult
-            Result containing the execution ID of the created OCR job.
+        str
+            The execution ID (UUID as string) from the async job submission.
         """
-        return await self.run_task(
-            "create_ocr_job",
-            config=config,
-            timeout=timeout,
+        task = ADPTaskRequest(
+            taskType="Create OCR Job",
+            taskConfiguration=config,
+            taskDisplayName="Create OCR Job",
+            taskDescription="Creates an OCR job to process documents in an engine",
         )
+        response = await self.run_async(task, timeout=timeout)
+        if not response:
+            raise RuntimeError("Create OCR Job task failed: No response received")
+
+        # Parse response as ADPTaskResponse to access execution_id
+        try:
+            task_response = ADPTaskResponse(**response)
+        except Exception as e:
+            raise RuntimeError(f"Failed to parse Create OCR Job response: {e}")
+
+        if not task_response.is_success():
+            raise RuntimeError(
+                f"Create OCR Job task failed with status: {task_response.execution_status}"
+            )
+
+        return str(task_response.execution_id)
 
     # --------------------------------------------------------------
 

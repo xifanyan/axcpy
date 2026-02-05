@@ -37,15 +37,11 @@ class CreateOcrJobTaskConfig(BaseTaskConfig):
 class CreateOcrJobResult(BaseModel):
     """Result from Create OCR Job task.
 
-    Contains the execution ID of the created OCR job.
-
-    Example:
-    {
-        "executionId": "12345"
-    }
+    This class is deprecated and kept for backward compatibility.
+    The create_ocr_job method now returns the execution ID as a string directly.
     """
 
-    executionId: str | None = None
+    pass
 
 
 __all__ = [

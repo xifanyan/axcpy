@@ -7,10 +7,7 @@ from axcpy.adp.models.create_data_source import (
     CreateDataSourceResult,
     CreateDataSourceTaskConfig,
 )
-from axcpy.adp.models.create_ocr_job import (
-    CreateOcrJobResult,
-    CreateOcrJobTaskConfig,
-)
+from axcpy.adp.models.create_ocr_job import CreateOcrJobTaskConfig
 from axcpy.adp.models.export_documents import (
     ExportDocumentsResult,
     ExportDocumentsTaskConfig,
@@ -36,6 +33,7 @@ from axcpy.adp.models.read_service_alerts import (
     ReadServiceAlertsTaskConfig,
 )
 from axcpy.adp.models.request import ADPTaskRequest
+from axcpy.adp.models.response import ADPTaskResponse
 from axcpy.adp.models.task_spec import TASK_SPECS  # type: ignore
 from axcpy.adp.models.taxonomy_statistic import (
     TaxonomyStatisticResult,
@@ -299,12 +297,11 @@ class Session:
         config: CreateOcrJobTaskConfig,
         *,
         timeout: float | None = None,
-    ) -> CreateOcrJobResult:
+    ) -> str:
         """Create an OCR job to process documents.
 
-        This task can be executed synchronously or asynchronously.
-        For async execution, the task will return an execution ID immediately.
-        Use statusAndProgress() to monitor job completion.
+        This task is executed asynchronously and returns immediately.
+        Use statusAndProgress() with the returned execution ID to monitor job completion.
 
         Parameters
         ----------
@@ -315,18 +312,11 @@ class Session:
 
         Returns
         -------
-        CreateOcrJobResult
-            Result containing the execution ID of the created OCR job.
+        str
+            The execution ID (UUID as string) from the async job submission.
         """
-        return self.run_task(
-            "create_ocr_job",
-            config=config,
-            timeout=timeout,
-        )
+        return self.run_task_async("create_ocr_job", config=config, timeout=timeout)
 
-    # --------------------------------------------------------------
-
-    # Generic task execution via registry (spec definitions in task_spec.py)
     # --------------------------------------------------------------
     # Generic task execution via registry (spec definitions in task_spec.py)
     # --------------------------------------------------------------
@@ -404,6 +394,90 @@ class Session:
             return spec["parser"](metadata)
         except Exception as e:  # pragma: no cover - defensive
             raise ValueError(f"Failed to parse metadata for {spec['task_type']}: {e}")
+
+    def run_task_async(
+        self,
+        key: str,
+        *,
+        config,
+        timeout: float | None = None,
+    ) -> str:
+        """Run a registered task asynchronously and return execution ID.
+
+        This method submits the task for asynchronous execution and immediately
+        returns the execution ID. Use statusAndProgress() to monitor completion.
+
+        Parameters
+        ----------
+        key : str
+            Task key in TASK_SPECS registry (e.g., 'list_entities').
+        config : BaseTaskConfig
+            Task configuration object.
+        timeout : float | None
+            Optional timeout in seconds for this request.
+
+        Returns
+        -------
+        str
+            The execution ID (UUID as string) for monitoring task progress.
+
+        Raises
+        ------
+        KeyError
+            If the task key is not found in TASK_SPECS.
+        RuntimeError
+            If task submission fails or response cannot be parsed.
+        """
+        spec = TASK_SPECS.get(key)
+        if not spec:
+            raise KeyError(f"Unknown task key: {key}")
+
+        # Apply per-task default overrides (same logic as run_task)
+        defaults = spec.get("defaults")
+        if defaults:
+            field_defaults: dict[str, Any] = {}
+            try:
+                for fname, finfo in getattr(config.__class__, "model_fields", {}).items():
+                    if finfo.default is not None:
+                        field_defaults[fname] = finfo.default
+            except Exception:  # pragma: no cover - defensive
+                pass
+            for attr, value in defaults.items():
+                try:
+                    current = getattr(config, attr)
+                except AttributeError:
+                    continue
+                default_val = field_defaults.get(attr, None)
+                if (default_val is not None and current == default_val) or (
+                    default_val is None and current is None
+                ):
+                    try:
+                        setattr(config, attr, value)
+                    except AttributeError:
+                        continue
+
+        task = ADPTaskRequest(
+            taskType=spec["task_type"],
+            taskConfiguration=config,
+            taskDisplayName=spec["display_name"],
+            taskDescription=spec["description"],
+        )
+        response = self.run_async(task, timeout=timeout)
+        if not response:
+            raise RuntimeError(f"{spec['task_type']} task failed: No response received")
+
+        # Parse response as ADPTaskResponse to access execution_id
+        try:
+            task_response = ADPTaskResponse(**response)
+        except Exception as e:
+            raise RuntimeError(f"Failed to parse {spec['task_type']} response: {e}")
+
+        if not task_response.is_success():
+            raise RuntimeError(
+                f"{spec['task_type']} task failed with status: {task_response.execution_status}"
+            )
+
+        return str(task_response.execution_id)
 
     def close(self) -> None:
         """Close the session. The shared client is not closed."""

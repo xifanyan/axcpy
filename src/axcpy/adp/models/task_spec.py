@@ -202,7 +202,7 @@ TASK_SPECS: dict[str, _TaskSpec] = {
         "task_type": "Create OCR Job",
         "display_name": "Create OCR Job",
         "description": "Creates an OCR job to process documents in an engine",
-        "parser": lambda md: CreateOcrJobResult(executionId=md.get("executionId")),
+        "parser": lambda md: CreateOcrJobResult(),  # Parser not used for async tasks
     },
 }
 

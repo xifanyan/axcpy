@@ -101,7 +101,9 @@ def read_configuration_example(session: Session):
             config_info,
         ) in result.adp_readConfiguration_json_output.items():
             print(f"  - Configuration: {config_name}")
-            print(f"    Global Parameters: {len(config_info.Global.Static.Parameters)} items")
+            print(
+                f"    Global Parameters: {len(config_info.Global.Static.Parameters)} items"
+            )
             print(f"    Dynamic Components: {len(config_info.DynamicComponents)} items")
 
             # Show first few parameters if they exist
@@ -210,7 +212,9 @@ def create_data_source_example(session: Session):
 
         print("✅ Data Source Created Successfully")
         print(f"  - Data Source Name: {result.adp_created_data_source_name}")
-        print(f"  - Data Source Display Name: {result.adp_created_data_source_displayname}")
+        print(
+            f"  - Data Source Display Name: {result.adp_created_data_source_displayname}"
+        )
         print(f"  - Host Name: {result.adp_hostname}")
         print(f"  - Engine: {result.adp_chosen_engine}")
         print(f"  - Template Used: {result.adp_used_data_source_template}")
@@ -329,13 +333,17 @@ def manage_users_and_groups_example(session: Session) -> None:
                 print(f"     - Group: {group_data.Name}")
                 print(f"       Display Name: {group_data.DisplayName}")
                 if group_data.Users:
-                    print(f"       Users ({len(group_data.Users)}): {', '.join(group_data.Users)}")
+                    print(
+                        f"       Users ({len(group_data.Users)}): {', '.join(group_data.Users)}"
+                    )
                 if group_data.Description:
                     print(f"       Description: {group_data.Description}")
 
         # Display users
         if result.adp_manageUsersAndGroups_json_output.Users:
-            print(f"\n  [+] Users found: {len(result.adp_manageUsersAndGroups_json_output.Users)}")
+            print(
+                f"\n  [+] Users found: {len(result.adp_manageUsersAndGroups_json_output.Users)}"
+            )
             for (
                 user_id,
                 user_data,
@@ -359,7 +367,11 @@ def manage_users_and_groups_example(session: Session) -> None:
                 for group_id, group_data in review_team_groups:
                     print("     - Review Team Users:")
                     for username in group_data.Users:
-                        user_data = result.adp_manageUsersAndGroups_json_output.Users.get(username)
+                        user_data = (
+                            result.adp_manageUsersAndGroups_json_output.Users.get(
+                                username
+                            )
+                        )
                         if user_data:
                             print(f"       - {user_data.DisplayName} ({username})")
 
@@ -399,19 +411,16 @@ def create_ocr_job_example(session: Session):
     try:
         config = CreateOcrJobTaskConfig(
             adp_createOcrJob_engineName="singleMindServer.demo00001",
-            adp_createOcrJob_applicationIdentifier="documentHold.demo00001",
             adp_createOcrJob_jobName="OCR Processing Job",
             adp_createOcrJob_jobDescription="Process documents for OCR",
             adp_createOcrJob_query="*",
-            adp_createOcrJob_wait="false",  # Async execution - returns immediately
-            adp_createOcrJob_jobPriority="10",
-            adp_createOcrJob_engineUserName="adpuser",
+            adp_createOcrJob_wait="true",  # Async execution - returns immediately
         )
 
-        result = session.create_ocr_job(config)
+        execution_id = session.create_ocr_job(config)
 
         print("✅ OCR Job Created Successfully")
-        print(f"  - Execution ID: {result.executionId}")
+        print(f"  - Execution ID: {execution_id}")
         print("  - Status: Job submitted for asynchronous processing")
         print("  - Use statusAndProgress() to monitor job completion")
 
@@ -445,20 +454,23 @@ def main():
     print(f"[+] Created shared client with ID: {id(shared_client)}")
 
     # Create a single session object that will be reused for all examples
-    session = Session(client=shared_client, auth_username=ADPUSERNAME, auth_password=ADPPASSWORD)
+    session = Session(
+        client=shared_client, auth_username=ADPUSERNAME, auth_password=ADPPASSWORD
+    )
     print(f"[+] Created shared session with username: {session.auth_username}")
     print("[*] This same session will be reused for all task examples")
 
     # Pass the session to all example functions
     list_entities_example(session)
-    manage_host_roles_example(session)
-    read_configuration_example(session)
-    query_engine_example(session)
-    taxonomy_statistics_example(session)
+    # manage_host_roles_example(session)
+    # read_configuration_example(session)
+    # query_engine_example(session)
+    # taxonomy_statistics_example(session)
     # export_documents_example(session)
     # create_data_source_example(session)
-    manage_users_and_groups_example(session)
-    read_service_alerts_example(session)
+    # manage_users_and_groups_example(session)
+    # read_service_alerts_example(session)
+    create_ocr_job_example(session)
 
 
 if __name__ == "__main__":

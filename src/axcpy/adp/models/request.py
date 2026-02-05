@@ -3,6 +3,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 from .create_data_source import CreateDataSourceTaskConfig
+from .create_ocr_job import CreateOcrJobTaskConfig
 from .export_documents import ExportDocumentsTaskConfig
 from .list_entities import ListEntitiesTaskConfig
 from .manage_host_roles import ManageHostRolesTaskConfig
@@ -24,6 +25,7 @@ TaskConfigurationType = (
     | TaxonomyStatisticTaskConfig
     | ExportDocumentsTaskConfig
     | CreateDataSourceTaskConfig
+    | CreateOcrJobTaskConfig
 )
 
 

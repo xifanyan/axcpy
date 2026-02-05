@@ -243,10 +243,10 @@ async def create_ocr_job_example(session: AsyncSession):
             adp_createOcrJob_engineUserName="adpuser",
         )
 
-        result = await session.create_ocr_job(config)
+        execution_id = await session.create_ocr_job(config)
 
         print("  [+] OCR Job Created Successfully")
-        print(f"  - Execution ID: {result.executionId}")
+        print(f"  - Execution ID: {execution_id}")
         print(f"\n  [i] Monitor job progress with session.statusAndProgress()")
 
     except Exception as e:
