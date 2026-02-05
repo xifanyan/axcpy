@@ -37,6 +37,10 @@ from axcpy.adp.models.read_service_alerts import (
 )
 from axcpy.adp.models.request import ADPTaskRequest
 from axcpy.adp.models.response import ADPTaskResponse
+from axcpy.adp.models.start_application import (
+    StartApplicationResult,
+    StartApplicationTaskConfig,
+)
 from axcpy.adp.models.taxonomy_statistic import (
     TaxonomyStatisticResult,
     TaxonomyStatisticTaskConfig,
@@ -67,4 +71,6 @@ __all__ = [
     "ManageUsersAndGroupsTaskConfig",
     "CreateOcrJobResult",
     "CreateOcrJobTaskConfig",
+    "StartApplicationResult",
+    "StartApplicationTaskConfig",
 ]

@@ -26,6 +26,7 @@ from axcpy.adp.models import (
     QueryEngineTaskConfig,
     ReadConfigurationTaskConfig,
     ReadServiceAlertsTaskConfig,
+    StartApplicationTaskConfig,
     TaxonomyStatisticTaskConfig,
 )
 from axcpy.adp.models.manage_users_and_groups import (
@@ -428,6 +429,24 @@ def create_ocr_job_example(session: Session):
         print(f"❌ Error: {e}")
 
 
+def start_application_example(session: Session):
+    """Example showing Start Application task using session.start_application() method."""
+    print("\n[*] Example 10: Start Application Task")
+
+    try:
+        config = StartApplicationTaskConfig(
+            adp_startApplication_applicationIdentifier="documentHold.demo00001",
+        )
+
+        result = session.start_application(config)
+
+        print("✅ Application Started Successfully")
+        print(f"  - Application URL: {result.adp_started_application_url}")
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+
 def main():
     """Main function that creates a shared client and demonstrates its usage."""
     import sys
@@ -470,7 +489,8 @@ def main():
     # create_data_source_example(session)
     # manage_users_and_groups_example(session)
     # read_service_alerts_example(session)
-    create_ocr_job_example(session)
+    # create_ocr_job_example(session)
+    start_application_example(session)
 
 
 if __name__ == "__main__":

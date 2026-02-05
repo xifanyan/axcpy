@@ -11,6 +11,7 @@ from .manage_users_and_groups import ManageUsersAndGroupsTaskConfig
 from .query_engine import QueryEngineTaskConfig
 from .read_configuration import ReadConfigurationTaskConfig
 from .read_service_alerts import ReadServiceAlertsTaskConfig
+from .start_application import StartApplicationTaskConfig
 from .taxonomy_statistic import TaxonomyStatisticTaskConfig
 
 # ruff: noqa: N815 - Field names must match API specification
@@ -26,6 +27,7 @@ TaskConfigurationType = (
     | ExportDocumentsTaskConfig
     | CreateDataSourceTaskConfig
     | CreateOcrJobTaskConfig
+    | StartApplicationTaskConfig
 )
 
 

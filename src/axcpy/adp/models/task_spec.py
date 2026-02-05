@@ -16,6 +16,7 @@ from .manage_users_and_groups import (
 from .query_engine import QueryEngineResult
 from .read_configuration import ConfigurationInfo, ReadConfigurationResult
 from .read_service_alerts import ReadServiceAlertsResult, ServiceAlert
+from .start_application import StartApplicationResult
 from .taxonomy_statistic import TaxonomyStatisticResult, TaxonomyStatisticsOutput
 
 
@@ -203,6 +204,14 @@ TASK_SPECS: dict[str, _TaskSpec] = {
         "display_name": "Create OCR Job",
         "description": "Creates an OCR job to process documents in an engine",
         "parser": lambda md: CreateOcrJobResult(),  # Parser not used for async tasks
+    },
+    "start_application": {
+        "task_type": "Start Application",
+        "display_name": "Start application",
+        "description": "Starts an application",
+        "parser": lambda md: StartApplicationResult(
+            adp_started_application_url=md.get("adp_started_application_url"),
+        ),
     },
 }
 

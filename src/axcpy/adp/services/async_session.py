@@ -30,6 +30,10 @@ from axcpy.adp.models.read_configuration import (
 )
 from axcpy.adp.models.request import ADPTaskRequest
 from axcpy.adp.models.response import ADPTaskResponse
+from axcpy.adp.models.start_application import (
+    StartApplicationResult,
+    StartApplicationTaskConfig,
+)
 from axcpy.adp.models.task_spec import TASK_SPECS  # type: ignore
 from axcpy.adp.models.taxonomy_statistic import (
     TaxonomyStatisticResult,
@@ -266,6 +270,32 @@ class AsyncSession:
         """
         return await self.run_task(
             "manage_users_and_groups",
+            config=config,
+            timeout=timeout,
+        )
+
+    async def start_application(
+        self,
+        config: StartApplicationTaskConfig,
+        *,
+        timeout: float | None = None,
+    ) -> StartApplicationResult:
+        """Start an application.
+
+        Parameters
+        ----------
+        config : StartApplicationTaskConfig
+            Configuration for the Start Application task.
+        timeout : float | None
+            Optional timeout in seconds for this request.
+
+        Returns
+        -------
+        StartApplicationResult
+            Result containing the started application URL.
+        """
+        return await self.run_task(
+            "start_application",
             config=config,
             timeout=timeout,
         )
