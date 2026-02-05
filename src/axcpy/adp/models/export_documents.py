@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any
-
 from pydantic import BaseModel, Field
 
 from .base import BaseTaskConfig
@@ -29,21 +27,15 @@ class ExportDocumentsTaskConfig(BaseTaskConfig):
     adp_exportDocuments_line_break: str = Field(default="")
     adp_exportDocuments_applicationIdentifier: str = Field(default="")
     adp_exportDocuments_engineIdentifier: str | None = Field(default=None)
-    adp_exportDocuments_exportFileName: str = Field(
-        default="adp_exportDocuments_exportFileName"
-    )
+    adp_exportDocuments_exportFileName: str = Field(default="adp_exportDocuments_exportFileName")
     adp_exportDocuments_engineUser: str | None = Field(default=None)
     adp_exportDocuments_image_volume: str = Field(default="Volume")
     adp_exportDocuments_exportFields: str | None = Field(default=None)
-    adp_exportDocuments_fullExportPath: str = Field(
-        default="adp_exportDocuments_exportPath"
-    )
+    adp_exportDocuments_fullExportPath: str = Field(default="adp_exportDocuments_exportPath")
     adp_exportDocuments_text_field: str | None = Field(default=None)
     adp_exportDocuments_exportDirectory: str | None = Field(default=None)
     adp_exportDocuments_enginePassword: str | None = Field(default=None)
-    adp_exportDocuments_adp_exportDocuments_mainQueryType: str | None = Field(
-        default=None
-    )
+    adp_exportDocuments_adp_exportDocuments_mainQueryType: str | None = Field(default=None)
 
 
 class ExportDocumentsResult(BaseModel):
@@ -55,7 +47,8 @@ class ExportDocumentsResult(BaseModel):
     {
         "adp_exportDocuments_searchResultSize": 14322,
         "adp_exportDocuments_exportFileName": "demo_export.csv",
-        "adp_exportDocuments_exportPath": "E:\\MindServer\\Projects\\tomcatServer.default\\..\\export\\demo_export"
+        "adp_exportDocuments_exportPath":
+            "E:\\MindServer\\Projects\\tomcatServer.default\\..\\export\\demo_export"
     }
     """
 

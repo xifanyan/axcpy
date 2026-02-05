@@ -5,6 +5,7 @@ from collections.abc import Callable
 from typing import Any, NotRequired, TypedDict
 
 from .create_data_source import CreateDataSourceResult
+from .create_ocr_job import CreateOcrJobResult
 from .export_documents import ExportDocumentsResult
 from .list_entities import ListEntitiesResult
 from .manage_host_roles import ManageHostRolesResult
@@ -49,7 +50,9 @@ TASK_SPECS: dict[str, _TaskSpec] = {
         "display_name": "List Entities",
         "description": "List entities from ADP service",
         "defaults": {
-            "adp_listEntities_whiteList": "id,displayName,hostName",
+            "adp_listEntities_whiteList": (
+                "id,displayName,processStatus,hostId,hostName,sourceForCreateFromExisting"
+            ),
         },
         "parser": lambda md: ListEntitiesResult(
             adp_entities_output_file_name=md.get("adp_entities_output_file_name", ""),
@@ -194,6 +197,12 @@ TASK_SPECS: dict[str, _TaskSpec] = {
                 )
             ],
         ),
+    },
+    "create_ocr_job": {
+        "task_type": "Create OCR Job",
+        "display_name": "Create OCR Job",
+        "description": "Creates an OCR job to process documents in an engine",
+        "parser": lambda md: CreateOcrJobResult(executionId=md.get("executionId")),
     },
 }
 

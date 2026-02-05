@@ -3,6 +3,9 @@
 import typer
 from rich.console import Console
 
+from axcpy.cli.adp_commands import adp_app
+from axcpy.cli.search_commands import search_app
+
 app = typer.Typer(
     name="axcpy",
     help="Axcelerate Python Client - CLI for OpenText Axcelerate eDiscovery service",
@@ -26,11 +29,8 @@ def config() -> None:
     console.print("[yellow]Configuration management coming soon...[/yellow]")
 
 
-# TODO: Add subcommands for ADP and SearchWebAPI
-# from axcpy.cli.adp_commands import adp_app
-# from axcpy.cli.search_commands import search_app
-# app.add_typer(adp_app, name="adp")
-# app.add_typer(search_app, name="search")
+app.add_typer(adp_app, name="adp")
+app.add_typer(search_app, name="search")
 
 
 if __name__ == "__main__":

@@ -27,7 +27,8 @@ class ManageHostRolesResult(BaseModel):
 
     Example:
     {
-        "adp_manageHostRoles_output_file_name": "E:/MindServer/Projects/adp.adp/adpRootDir/output.json",
+        "adp_manageHostRoles_output_file_name":
+            "E:/MindServer/Projects/adp.adp/adpRootDir/output.json",
         "adp_manageHostRoles_json_output": {
             "vm-rhauswirth2.otxlab.net": [
                 "applicationServer",

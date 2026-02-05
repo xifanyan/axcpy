@@ -34,12 +34,8 @@ class ReadConfigurationTaskConfig(BaseTaskConfig):
     """Configuration model for Read Configuration task."""
 
     adp_readConfiguration_outputJson: str = Field(default="adp_entities_json_output")
-    adp_readConfiguration_configsToRead: list[ConfigToReadArg] = Field(
-        default_factory=list
-    )
-    adp_readConfiguration_outputFilename: str = Field(
-        default="adp_entities_output_file_name"
-    )
+    adp_readConfiguration_configsToRead: list[ConfigToReadArg] = Field(default_factory=list)
+    adp_readConfiguration_outputFilename: str = Field(default="adp_entities_output_file_name")
     adp_readConfiguration_entityIdToRead: str = Field(default="")
     adp_readConfiguration_file: str = Field(default="output.json")
     adp_readConfiguration_fileFormat: str = Field(default="JSON")
@@ -101,7 +97,8 @@ class ReadConfigurationResult(BaseModel):
 
     Example shape:
     {
-        "adp_readConfiguration_output_file_name": "E:/MindServer/Projects/adp.adp/adpRootDir/output.json",
+        "adp_readConfiguration_output_file_name":
+            "E:/MindServer/Projects/adp.adp/adpRootDir/output.json",
         "adp_readConfiguration_json_output": {
             "configName1": {
                 "DynamicComponents": {...},
@@ -120,6 +117,4 @@ class ReadConfigurationResult(BaseModel):
     """
 
     adp_readConfiguration_output_file_name: str
-    adp_readConfiguration_json_output: dict[str, ConfigurationInfo] = Field(
-        default_factory=dict
-    )
+    adp_readConfiguration_json_output: dict[str, ConfigurationInfo] = Field(default_factory=dict)

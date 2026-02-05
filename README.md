@@ -163,10 +163,39 @@ axcpy/
 └── docs/                 # Documentation
 ```
 
+## OpenCode Integration
+
+This project includes an OpenCode skill for checking AXcelerate entity status! When using OpenCode in this repository, you can ask natural language questions like:
+
+- "What's the status of demo00001?"
+- "Show me all SingleMind servers"
+- "Is singleMindServer.demo00001 running?"
+
+OpenCode will automatically use the `axcelerate-status` skill to query your AXcelerate environment.
+
+**Quick setup:**
+```bash
+# Default credentials are pre-configured. Just start OpenCode!
+opencode  # Start OpenCode and ask about entity status!
+
+# Optional: Override with custom credentials
+export ADP_USERNAME="your_username"
+export ADP_PASSWORD="your_password"
+export ADP_BASE_URL="https://your-server:8443"
+```
+
+**Default Environment:**
+- Server: `https://vm-rhauswirth2.otxlab.net:8443`
+- Username: `adpuser`
+- Password: `adpus3r`
+
+See [.opencode/skills/axcelerate-status/QUICKSTART.md](.opencode/skills/axcelerate-status/QUICKSTART.md) for more details.
+
 ## Documentation
 
 - [DESIGN.md](DESIGN.md) - Comprehensive architecture and design documentation
 - [examples/](examples/) - Practical usage examples
+- [.opencode/skills/axcelerate-status/](.opencode/skills/axcelerate-status/) - OpenCode skill for entity status checking
 - API Reference - Coming soon
 
 ## Requirements

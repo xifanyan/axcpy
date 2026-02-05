@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
-
 from typing import Any
+
+from pydantic import BaseModel, Field
 
 from .base import BaseTaskConfig
 
@@ -16,7 +16,7 @@ class ListEntitiesTaskConfig(BaseTaskConfig):
     adp_listEntities_numberOfEntities: str = Field(default="-1")
     adp_listEntities_axcRequestTimeoutSeconds: int = Field(default=900)
     adp_listEntities_userHasAccess: str = Field(default="")
-    adp_listEntities_whiteList: str = Field(default="id,displayName")
+    adp_listEntities_whiteList: str = Field(default="id,displayName,processStatus")
     adp_listEntities_relatedEntity: str = Field(default="")
     adp_listEntities_workspace: str = Field(default="")
     adp_listEntities_status: str = Field(default="")
@@ -29,17 +29,13 @@ class ListEntitiesTaskConfig(BaseTaskConfig):
     adp_listEntities_axcServicePassword: str = Field(default="")
     adp_listEntities_startingEntity: str = Field(default="1")
     adp_listEntities_outputJson: str = Field(default="adp_entities_json_output")
-    adp_listEntities_descriptionSettingFilterValueDateFormat: str = Field(
-        default="yyyy-MM-dd"
-    )
+    adp_listEntities_descriptionSettingFilterValueDateFormat: str = Field(default="yyyy-MM-dd")
     adp_listEntities_descriptionFilters: list[str] = Field(default_factory=list)
     adp_listEntities_axcServiceUser: str = Field(default="")
     adp_listEntities_axcFields: str = Field(default="")
     adp_listEntities_httpsTrustCertificate: str = Field(default="")
     adp_listEntities_host: str = Field(default="")
-    adp_listEntities_outputFilename: str = Field(
-        default="adp_entities_output_file_name"
-    )
+    adp_listEntities_outputFilename: str = Field(default="adp_entities_output_file_name")
     adp_listEntities_id: str = Field(default="")
     adp_listEntities_httpsAllowUntrustedHosts: str = Field(default="true")
 

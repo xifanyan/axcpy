@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from axcpy.adp import ADPClient, Session
 from axcpy.adp.models import (
     CreateDataSourceTaskConfig,
+    CreateOcrJobTaskConfig,
     ExportDocumentsTaskConfig,
     ListEntitiesTaskConfig,
     ManageHostRolesTaskConfig,
@@ -386,6 +387,33 @@ def read_service_alerts_example(session: Session):
                 print(f"    Host: {alert.host_name}")
             if alert.report_on:
                 print(f"    Reported: {alert.report_on}")
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+
+def create_ocr_job_example(session: Session):
+    """Example showing Create OCR Job task using session.create_ocr_job() method."""
+    print("\n[*] Example 9: Create OCR Job Task")
+
+    try:
+        config = CreateOcrJobTaskConfig(
+            adp_createOcrJob_engineName="singleMindServer.demo00001",
+            adp_createOcrJob_applicationIdentifier="documentHold.demo00001",
+            adp_createOcrJob_jobName="OCR Processing Job",
+            adp_createOcrJob_jobDescription="Process documents for OCR",
+            adp_createOcrJob_query="*",
+            adp_createOcrJob_wait="false",  # Async execution - returns immediately
+            adp_createOcrJob_jobPriority="10",
+            adp_createOcrJob_engineUserName="adpuser",
+        )
+
+        result = session.create_ocr_job(config)
+
+        print("✅ OCR Job Created Successfully")
+        print(f"  - Execution ID: {result.executionId}")
+        print("  - Status: Job submitted for asynchronous processing")
+        print("  - Use statusAndProgress() to monitor job completion")
 
     except Exception as e:
         print(f"❌ Error: {e}")

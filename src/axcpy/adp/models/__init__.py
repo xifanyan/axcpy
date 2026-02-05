@@ -8,6 +8,10 @@ from axcpy.adp.models.create_data_source import (
     CreateDataSourceResult,
     CreateDataSourceTaskConfig,
 )
+from axcpy.adp.models.create_ocr_job import (
+    CreateOcrJobResult,
+    CreateOcrJobTaskConfig,
+)
 from axcpy.adp.models.export_documents import (
     ExportDocumentsResult,
     ExportDocumentsTaskConfig,
@@ -61,4 +65,6 @@ __all__ = [
     "CreateDataSourceTaskConfig",
     "ManageUsersAndGroupsResult",
     "ManageUsersAndGroupsTaskConfig",
+    "CreateOcrJobResult",
+    "CreateOcrJobTaskConfig",
 ]

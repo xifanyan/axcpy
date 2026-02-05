@@ -13,3 +13,9 @@ def mock_api_key() -> str:
 def mock_base_url() -> str:
     """Mock base URL for testing."""
     return "https://test.axcelerate.example.com"
+
+
+@pytest.fixture
+def mock_create_ocr_job_response():
+    """Mock response for Create OCR Job task."""
+    return {"executionStatus": "success", "executionMetaData": {"executionId": "12345"}}

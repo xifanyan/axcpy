@@ -20,7 +20,8 @@ class ADPClient:
     base_url: str
         Base URL for the ADP service (e.g. https://example.com/api)
     ignore_tls: bool, default False
-        If True, disables TLS certificate verification (useful for testing against self-signed hosts).
+        If True, disables TLS certificate verification (useful for testing
+        against self-signed hosts).
     timeout: float | httpx.Timeout | None
         Optional default timeout applied to all requests (can be overridden per call).
     headers: dict[str, str] | None
@@ -42,9 +43,7 @@ class ADPClient:
         self.ignore_tls = ignore_tls
         self.debug = debug
         self._default_headers = headers or {"Content-Type": "application/json"}
-        client_timeout = (
-            httpx.Timeout(timeout) if isinstance(timeout, (int, float)) else timeout
-        )
+        client_timeout = httpx.Timeout(timeout) if isinstance(timeout, (int, float)) else timeout
         self._client = httpx.Client(
             base_url=self.base_url,
             timeout=client_timeout,
@@ -54,7 +53,7 @@ class ADPClient:
     def close(self) -> None:
         self._client.close()
 
-    def __enter__(self) -> "ADPClient":  # pragma: no cover
+    def __enter__(self) -> ADPClient:  # pragma: no cover
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:  # pragma: no cover
@@ -102,7 +101,7 @@ class ADPClient:
                     response.status_code,
                     response_str,
                 )
-            except Exception as e:
+            except Exception:
                 logger.debug(
                     "Response from %s (status=%s): <non-JSON or failed to parse>",
                     endpoint,

@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from axcpy.adp import AsyncADPClient, AsyncSession
 from axcpy.adp.models import (
+    CreateOcrJobTaskConfig,
     ListEntitiesTaskConfig,
     ManageHostRolesTaskConfig,
     QueryEngineTaskConfig,
@@ -92,9 +93,7 @@ async def read_configuration_example(session: AsyncSession):
             config_info,
         ) in result.adp_readConfiguration_json_output.items():
             print(f"  - Configuration: {config_name}")
-            print(
-                f"    Global Parameters: {len(config_info.Global.Static.Parameters)} items"
-            )
+            print(f"    Global Parameters: {len(config_info.Global.Static.Parameters)} items")
             print(f"    Dynamic Components: {len(config_info.DynamicComponents)} items")
 
             # Show first few parameters if they exist
@@ -226,6 +225,32 @@ async def concurrent_tasks_example(session: AsyncSession):
 
     except Exception as e:
         print(f"[X] Concurrent execution error: {e}")
+
+
+async def create_ocr_job_example(session: AsyncSession):
+    """Example showing Create OCR Job task (async only)."""
+    print("\n[*] Example 7: Create OCR Job Task (Async)")
+
+    try:
+        config = CreateOcrJobTaskConfig(
+            adp_createOcrJob_engineName="singleMindServer.demo00001",
+            adp_createOcrJob_applicationIdentifier="documentHold.demo00001",
+            adp_createOcrJob_jobName="OCR Processing Job",
+            adp_createOcrJob_jobDescription="Process documents for OCR",
+            adp_createOcrJob_query="*",
+            adp_createOcrJob_wait="false",  # Async execution
+            adp_createOcrJob_jobPriority="10",
+            adp_createOcrJob_engineUserName="adpuser",
+        )
+
+        result = await session.create_ocr_job(config)
+
+        print("  [+] OCR Job Created Successfully")
+        print(f"  - Execution ID: {result.executionId}")
+        print(f"\n  [i] Monitor job progress with session.statusAndProgress()")
+
+    except Exception as e:
+        print(f"  [X] Error: {e}")
 
 
 async def main():

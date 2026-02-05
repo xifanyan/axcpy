@@ -7,6 +7,10 @@ from axcpy.adp.models.create_data_source import (
     CreateDataSourceResult,
     CreateDataSourceTaskConfig,
 )
+from axcpy.adp.models.create_ocr_job import (
+    CreateOcrJobResult,
+    CreateOcrJobTaskConfig,
+)
 from axcpy.adp.models.export_documents import (
     ExportDocumentsResult,
     ExportDocumentsTaskConfig,
@@ -264,6 +268,35 @@ class AsyncSession:
         """
         return await self.run_task(
             "manage_users_and_groups",
+            config=config,
+            timeout=timeout,
+        )
+
+    async def create_ocr_job(
+        self,
+        config: CreateOcrJobTaskConfig,
+        *,
+        timeout: float | None = None,
+    ) -> CreateOcrJobResult:
+        """Create an OCR job to process documents (async).
+
+        This task creates an OCR job asynchronously and returns the execution ID.
+        Use statusAndProgress() to monitor job completion.
+
+        Parameters
+        ----------
+        config : CreateOcrJobTaskConfig
+            Configuration for the Create OCR Job task.
+        timeout : float | None
+            Optional timeout in seconds for this request.
+
+        Returns
+        -------
+        CreateOcrJobResult
+            Result containing the execution ID of the created OCR job.
+        """
+        return await self.run_task(
+            "create_ocr_job",
             config=config,
             timeout=timeout,
         )
